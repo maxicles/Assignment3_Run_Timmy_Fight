@@ -20,6 +20,8 @@ background_image = pygame.image.load('assets/sky.png')
 
 # defining grid variables
 tile_size = 50  # tile size will be 50x50 on the grid
+game_over = 0
+
 
 
 # drawing a grid to help with the placement of the tiles and images
@@ -43,6 +45,7 @@ class Player():
                                                       False)  # using the right image thats loaded and flipping it to the left
             self.anim_right.append(player_image_right)
             self.anim_left.append(player_image_left)
+        self.player_died = pygame.image.load('assets/ghost.png')
         self.image = self.anim_right[self.index]
 
         self.rect = self.image.get_rect()
@@ -55,85 +58,101 @@ class Player():
         self.jump = False
         self.direction = 0  # usin the variable to determine whether the player is pressing left or riht
 
-    def update(self):
+    def update(self, game_over):
         dx = 0
         dy = 0
         anim_cooldown = 20  # 20 iterations need to pass before the next index
-        # adding in controls for the player
-        key = pygame.key.get_pressed()
-        if key[pygame.K_SPACE] and self.jump == False:
-            self.velocity_y = -15
-            self.jump = True
-        if key[pygame.K_SPACE]:
-            self.jump = False
 
-        # calculating the new player position. Checking the collision of that new positiom and the adjustin the position when collinding with an object
-        if key[pygame.K_LEFT]:
-            dx -= 5
-            self.counter += 1
-            self.direction = -1
-        if key[pygame.K_RIGHT]:
-            dx += 5
-            self.counter += 1
-            self.direction = 1
-        if key[pygame.K_LEFT] == False and key[
-            pygame.K_RIGHT] == False:  # resetting the counter and index when you not holding dow left or right buttoons
-            self.counter = 0
-            self.index = 0
-            if self.direction == 1:
-                # updating the animation with the next imae
-                self.image = self.anim_right[self.index]
-            if self.direction == -1:
-                # updating the animation with the next imae
-                self.image = self.anim_left[self.index]
+        if game_over == 0:
+            # adding in controls for the player
+            key = pygame.key.get_pressed()
+            if key[pygame.K_SPACE] and self.jump == False:
+                self.velocity_y = -15
+                self.jump = True
+            if key[pygame.K_SPACE]:
+                self.jump = False
 
-        # addin in the animation for the character
-        self.counter += 1
-        if self.counter > anim_cooldown:
-            self.counter = 0
-            self.index += 1
-            if self.index >= len(self.anim_right):
+            # calculating the new player position. Checking the collision of that new positiom and the adjustin the position when collinding with an object
+            if key[pygame.K_LEFT]:
+                dx -= 5
+                self.counter += 1
+                self.direction = -1
+            if key[pygame.K_RIGHT]:
+                dx += 5
+                self.counter += 1
+                self.direction = 1
+            if key[pygame.K_LEFT] == False and key[
+                pygame.K_RIGHT] == False:  # resetting the counter and index when you not holding dow left or right buttoons
+                self.counter = 0
                 self.index = 0
-            if self.direction == 1:
-                # updating the animation with the next imae
-                self.image = self.anim_right[self.index]
-            if self.direction == -1:
-                # updating the animation with the next imae
-                self.image = self.anim_left[self.index]
+                if self.direction == 1:
+                    # updating the animation with the next imae
+                    self.image = self.anim_right[self.index]
+                if self.direction == -1:
+                    # updating the animation with the next imae
+                    self.image = self.anim_left[self.index]
 
-        # adding in some gravity when jumping
-        self.velocity_y += 1
-        if self.velocity_y > 10:
-            self.velocity_y = 10
-        dy += self.velocity_y
+            # addin in the animation for the character
+            self.counter += 1
+            if self.counter > anim_cooldown:
+                self.counter = 0
+                self.index += 1
+                if self.index >= len(self.anim_right):
+                    self.index = 0
+                if self.direction == 1:
+                    # updating the animation with the next imae
+                    self.image = self.anim_right[self.index]
+                if self.direction == -1:
+                    # updating the animation with the next imae
+                    self.image = self.anim_left[self.index]
 
-        # check for collision
-        for tile in world.tile_list:  # lookin for collison in the world tile list from the y direction
-            # checking for collision in x direction
-            if tile[1].colliderect(self.rect.x + dx, self.rect.y, self.width, self.height):
-                dx = 0
+            # adding in some gravity when jumping
+            self.velocity_y += 1
+            if self.velocity_y > 10:
+                self.velocity_y = 10
+            dy += self.velocity_y
 
-            if tile[1].colliderect(self.rect.x, self.rect.y + dy, self.width,
-                                   self.height):  # creatin a new collision detection box which wil act as a temporary collision box, in orde to make adjustmenst before the actual collision
-                # checkin if the player is below the ground. if the player is jumping
-                if self.velocity_y < 0:
-                    dy = tile[1].bottom - self.rect.top
-                    self.velocity_y = 0
-                # checking if the player is above the ground and is fallin
-                elif self.velocity_y >= 0:
-                    dy = tile[1].top - self.rect.bottom
+            # check for collision
+            for tile in world.tile_list:  # lookin for collison in the world tile list from the y direction
+                # checking for collision in x direction
+                if tile[1].colliderect(self.rect.x + dx, self.rect.y, self.width, self.height):
+                    dx = 0
 
-        # updating player coordinates
+                if tile[1].colliderect(self.rect.x, self.rect.y + dy, self.width,
+                                       self.height):  # creatin a new collision detection box which wil act as a temporary collision box, in orde to make adjustmenst before the actual collision
+                    # checkin if the player is below the ground. if the player is jumping
+                    if self.velocity_y < 0:
+                        dy = tile[1].bottom - self.rect.top
+                        self.velocity_y = 0
+                    # checking if the player is above the ground and is fallin
+                    elif self.velocity_y >= 0:
+                        dy = tile[1].top - self.rect.bottom
 
-        self.rect.x += dx
-        self.rect.y += dy
+            #checking if the character collides with the enemies
+            if pygame.sprite.spritecollide(self, blob_group, False):
+                game_over = -1
 
-        if self.rect.bottom > screen_height:
-            self.rect.bottom = screen_height
-            dy = 0
+            # checking if the player collides with the lava
+            if pygame.sprite.spritecollide(self, lava_group, False):
+                game_over = -1
+
+
+
+            # updating player coordinates
+            self.rect.x += dx
+            self.rect.y += dy
+
+        elif game_over == -1:
+            self.image = self.player_died
+            if self.rect.y > 250:
+                self.rect.y -= 5
+
+
 
         screen.blit(self.image, self.rect)  # drawing the player on the screen
         pygame.draw.rect(screen, (255, 255, 255), self.rect, 2)
+
+        return game_over
 
 
 # creating a class to display all the world data from the lsit below
@@ -167,6 +186,11 @@ class World():
                 if tile == 3:
                     blob = Enemy(column_count * tile_size, row_count * tile_size + 15)
                     blob_group.add(blob)
+                if tile == 6:
+                    lava = Lava(column_count * tile_size, row_count * tile_size + (tile_size // 2))
+                    lava_group.add(lava)
+
+
                 column_count += 1  # increasing the tiles in the rows by 1
             row_count += 1
 
@@ -193,6 +217,16 @@ class Enemy(pygame.sprite.Sprite):
         if abs(self.move_counter) > 50: # changing it to an absolutin so that even if the its neative it going to convert it to a positive value
             self.move_direction *= -1
             self.move_counter *= -1
+
+class Lava(pygame.sprite.Sprite):
+    def __init__(self, x, y):
+        pygame.sprite.Sprite.__init__(self)  # the enemy class is a child of the sprite clasas
+        lava_image = pygame.image.load('assets/lava.png')
+        self.image = pygame.transform.scale(lava_image,(tile_size, tile_size // 2))
+        self.rect = self.image.get_rect()
+        self.rect.x = x
+        self.rect.y = y
+
 
 
 
@@ -223,6 +257,7 @@ world_data = [[1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
 
 player = Player(100, screen_height - 130)
 blob_group = pygame.sprite.Group()
+lava_group = pygame.sprite.Group()
 world = World(world_data)
 
 GameIsRunning = True
@@ -234,9 +269,13 @@ while GameIsRunning:
     screen.blit(sun_image, (100, 100))
 
     world.draw()
-    blob_group.update()
+
+    if game_over == 0:
+        blob_group.update()
+
     blob_group.draw(screen)
-    player.update()
+    lava_group.draw(screen)
+    game_over = player.update(game_over)
     # calling the grid
     # draw_grid()
 
