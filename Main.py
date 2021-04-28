@@ -20,10 +20,64 @@ tile_size = 50  # tile size will be 50x50 on the grid
 
 
 # drawing a grid to help with the placement of the tiles and images
-def draw_grid():
-    for line in range(0, 20):
-        pygame.draw.line(screen, (255, 255, 255), (0, line * tile_size), (screen_width, line * tile_size))
-        pygame.draw.line(screen, (255, 255, 255), (line * tile_size, 0), (line * tile_size, screen_height))
+# def draw_grid():
+#     for line in range(0, 20):
+#         pygame.draw.line(screen, (255, 255, 255), (0, line * tile_size), (screen_width, line * tile_size))
+#         pygame.draw.line(screen, (255, 255, 255), (line * tile_size, 0), (line * tile_size, screen_height))
+
+
+class Player():
+    def __init__(self, x, y):
+        player_image = pygame.image.load('assets/guy1.png')
+        self.image = pygame.transform.scale(player_image, (40, 80))
+        self.rect = self.image.get_rect()
+        # iving the image an coordinate
+        self.rect.x = x
+        self.rect.y = y
+        self.velocity_y = 0
+        self.jump = False
+
+    def update(self):
+        dx = 0
+        dy = 0
+        # addin in controls for the player
+        key = pygame.key.get_pressed()
+        if key [pygame.K_SPACE] and self.jump == False:
+            self.velocity_y = -15
+            self.jump = True
+        if key[pygame.K_SPACE]:
+            self.jump = False
+
+        # calculating the new player position. Checking the collision of that new positiom and the adjustin the position when collinding with an object
+        if key[pygame.K_LEFT]:
+            dx -= 5
+        if key[pygame.K_RIGHT]:
+            dx += 5
+
+        # adding in some ravity when jumping
+        self.velocity_y += 1
+        if self.velocity_y > 10:
+            self.velocity_y = 10
+        dy += self.velocity_y
+
+
+        #check for collision
+        #updating player coordinates
+
+        self.rect.x += dx
+        self.rect.y += dy
+
+        if self.rect.bottom > screen_height:
+            self.rect.bottom = screen_height
+            dy = 0
+
+
+
+
+        screen.blit(self.image, self.rect)  # drawing the player on the screen
+
+
+
 
 
 # creating a class to display all the world data from the lsit below
@@ -85,6 +139,8 @@ world_data = [[1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
                1]]  # the first row is going to be the dirt in the 5x5 grid. Defining where all the elements in the game will sit on the grid
 # The bottom row will be for the grass images
 
+
+player = Player(100, screen_height - 130)
 world = World(world_data)
 
 GameIsRunning = True
@@ -95,8 +151,9 @@ while GameIsRunning:
     screen.blit(sun_image, (100, 100))
 
     world.draw()
+    player.update()
     # calling the grid
-    draw_grid()
+    # draw_grid()
 
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
