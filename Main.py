@@ -37,8 +37,10 @@ class Player():
         self.counter = 0
         for num in range(1, 5):
             player_image_right = pygame.image.load(f'assets/guy{num}.png')
-            player_image_right = pygame.transform.scale(player_image_right, (40, 80)) # loading in the player image and scaling in to size
-            player_image_left = pygame.transform.flip(player_image_right, True, False) # using the right image thats loaded and flipping it to the left
+            player_image_right = pygame.transform.scale(player_image_right,
+                                                        (40, 80))  # loading in the player image and scaling in to size
+            player_image_left = pygame.transform.flip(player_image_right, True,
+                                                      False)  # using the right image thats loaded and flipping it to the left
             self.anim_right.append(player_image_right)
             self.anim_left.append(player_image_left)
         self.image = self.anim_right[self.index]
@@ -47,17 +49,19 @@ class Player():
         # iving the image an coordinate
         self.rect.x = x
         self.rect.y = y
+        self.width = self.image.get_width()
+        self.height = self.image.get_height()
         self.velocity_y = 0
         self.jump = False
-        self.direction = 0 # usin the variable to determine whether the player is pressing left or riht
+        self.direction = 0  # usin the variable to determine whether the player is pressing left or riht
 
     def update(self):
         dx = 0
         dy = 0
-        anim_cooldown = 20 # 20 iterations need to pass before the next index
+        anim_cooldown = 20  # 20 iterations need to pass before the next index
         # adding in controls for the player
         key = pygame.key.get_pressed()
-        if key [pygame.K_SPACE] and self.jump == False:
+        if key[pygame.K_SPACE] and self.jump == False:
             self.velocity_y = -15
             self.jump = True
         if key[pygame.K_SPACE]:
@@ -72,7 +76,8 @@ class Player():
             dx += 5
             self.counter += 1
             self.direction = 1
-        if key[pygame.K_LEFT] == False and key [ pygame.K_RIGHT] == False: # resetting the counter and index when you not holdin dow left or riht buttoons
+        if key[pygame.K_LEFT] == False and key[
+            pygame.K_RIGHT] == False:  # resetting the counter and index when you not holding dow left or right buttoons
             self.counter = 0
             self.index = 0
             if self.direction == 1:
@@ -82,7 +87,7 @@ class Player():
                 # updating the animation with the next imae
                 self.image = self.anim_left[self.index]
 
-# addin in the animation for the character
+        # addin in the animation for the character
         self.counter += 1
         if self.counter > anim_cooldown:
             self.counter = 0
@@ -90,22 +95,35 @@ class Player():
             if self.index >= len(self.anim_right):
                 self.index = 0
             if self.direction == 1:
-                #updating the animation with the next imae
+                # updating the animation with the next imae
                 self.image = self.anim_right[self.index]
             if self.direction == -1:
                 # updating the animation with the next imae
                 self.image = self.anim_left[self.index]
 
-
-        # adding in some ravity when jumping
+        # adding in some gravity when jumping
         self.velocity_y += 1
         if self.velocity_y > 10:
             self.velocity_y = 10
         dy += self.velocity_y
 
+        # check for collision
+        for tile in world.tile_list:  # lookin for collison in the world tile list from the y direction
+            # checking for collision in x direction
+            if tile[1].colliderect(self.rect.x + dx, self.rect.y, self.width, self.height):
+                dx = 0
 
-        #check for collision
-        #updating player coordinates
+            if tile[1].colliderect(self.rect.x, self.rect.y + dy, self.width,
+                                   self.height):  # creatin a new collision detection box which wil act as a temporary collision box, in orde to make adjustmenst before the actual collision
+                # checkin if the player is below the ground. if the player is jumping
+                if self.velocity_y < 0:
+                    dy = tile[1].bottom - self.rect.top
+                    self.velocity_y = 0
+                # checking if the player is above the ground and is fallin
+                elif self.velocity_y >= 0:
+                    dy = tile[1].top - self.rect.bottom
+
+        # updating player coordinates
 
         self.rect.x += dx
         self.rect.y += dy
@@ -114,13 +132,8 @@ class Player():
             self.rect.bottom = screen_height
             dy = 0
 
-
-
-
         screen.blit(self.image, self.rect)  # drawing the player on the screen
-
-
-
+        pygame.draw.rect(screen, (255, 255, 255), self.rect, 2)
 
 
 # creating a class to display all the world data from the lsit below
@@ -134,7 +147,7 @@ class World():
         # below i want to be able to apply the dirt image to each of the rows one by one
         for row in data:
             column_count = 0
-            for tile in row:  # if the tile in the row is 1
+            for tile in row:  # if the tile in the row is 1 the create dirt
                 if tile == 1:
                     image = pygame.transform.scale(dirt_image, (tile_size, tile_size))
                     image_rect = image.get_rect()
@@ -143,20 +156,45 @@ class World():
                     image_rect.y = row_count * tile_size
                     tile = (image, image_rect)
                     self.tile_list.append(tile)
-                if tile == 2:
-                    image = pygame.transform.scale(dirt_image, (tile_size, tile_size))
+                if tile == 2:  # creating the grass
+                    image = pygame.transform.scale(grass_image, (tile_size, tile_size))
                     image_rect = image.get_rect()
                     # ivin the image an x and y coordinate
                     image_rect.x = column_count * tile_size
                     image_rect.y = row_count * tile_size
                     tile = (image, image_rect)
                     self.tile_list.append(tile)
+                if tile == 3:
+                    blob = Enemy(column_count * tile_size, row_count * tile_size + 15)
+                    blob_group.add(blob)
                 column_count += 1  # increasing the tiles in the rows by 1
             row_count += 1
 
     def draw(self):
         for tile in self.tile_list:  # going throuh each of the tiles in the list and drawin them on the screen
             screen.blit(tile[0], tile[1])
+            pygame.draw.rect(screen, (255, 255, 255), tile[1],
+                             2)  # checking for a collision between the player and the background tiles
+
+
+class Enemy(pygame.sprite.Sprite):
+    def __init__(self, x, y):
+        pygame.sprite.Sprite.__init__(self)  # the enemy class is a child of the sprite clasas
+        self.image = pygame.image.load('assets/blob.png')
+        self.rect = self.image.get_rect()
+        self.rect.x = x
+        self.rect.y = y
+        self.move_direction = 1
+        self.move_counter = 0
+
+    def update(self):
+        self.rect.x += self.move_direction
+        self.move_counter += 1
+        if abs(self.move_counter) > 50: # changing it to an absolutin so that even if the its neative it going to convert it to a positive value
+            self.move_direction *= -1
+            self.move_counter *= -1
+
+
 
 
 world_data = [[1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
@@ -184,8 +222,8 @@ world_data = [[1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
 
 
 player = Player(100, screen_height - 130)
+blob_group = pygame.sprite.Group()
 world = World(world_data)
-
 
 GameIsRunning = True
 while GameIsRunning:
@@ -196,6 +234,8 @@ while GameIsRunning:
     screen.blit(sun_image, (100, 100))
 
     world.draw()
+    blob_group.update()
+    blob_group.draw(screen)
     player.update()
     # calling the grid
     # draw_grid()
