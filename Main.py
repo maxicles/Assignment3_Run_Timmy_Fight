@@ -16,7 +16,7 @@ sun_image = pygame.image.load('assets/sun.png')
 background_image = pygame.image.load('assets/sky.png')
 
 # defining grid variables
-tile_size = 200
+tile_size = 50  # tile size will be 50x50 on the grid
 
 
 # drawing a grid to help with the placement of the tiles and images
@@ -31,6 +31,7 @@ class World():
     def __init__(self, data):
         self.tile_list = []
         dirt_image = pygame.image.load('assets/dirt.png')  # loading the images
+        grass_image = pygame.image.load('assets/grass.png')
         row_count = 0
 
         # below i want to be able to apply the dirt image to each of the rows one by one
@@ -40,25 +41,49 @@ class World():
                 if tile == 1:
                     image = pygame.transform.scale(dirt_image, (tile_size, tile_size))
                     image_rect = image.get_rect()
-                    #ivin the image an x and y coordinate
+                    # ivin the image an x and y coordinate
                     image_rect.x = column_count * tile_size
                     image_rect.y = row_count * tile_size
                     tile = (image, image_rect)
                     self.tile_list.append(tile)
-                column_count += 1 # increasing the tiles in the rows by 1
+                if tile == 2:
+                    image = pygame.transform.scale(dirt_image, (tile_size, tile_size))
+                    image_rect = image.get_rect()
+                    # ivin the image an x and y coordinate
+                    image_rect.x = column_count * tile_size
+                    image_rect.y = row_count * tile_size
+                    tile = (image, image_rect)
+                    self.tile_list.append(tile)
+                column_count += 1  # increasing the tiles in the rows by 1
             row_count += 1
 
     def draw(self):
-        for tile in self.tile_list: # going throuh each of the tiles in the list and drawin them on the screen
+        for tile in self.tile_list:  # going throuh each of the tiles in the list and drawin them on the screen
             screen.blit(tile[0], tile[1])
 
 
-world_data = [[1, 1, 1, 1, 1],
-              [1, 0, 0, 0, 1],
-              [1, 0, 0, 0, 1],
-              [1, 0, 0, 0, 1],
-              [1, 1, 1, 1,
+world_data = [[1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
+              [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1],
+              [1, 0, 0, 0, 0, 7, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 8, 1],
+              [1, 0, 0, 0, 0, 2, 0, 0, 0, 0, 0, 7, 0, 0, 0, 0, 0, 2, 2, 1],
+              [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2, 2, 0, 7, 0, 5, 0, 0, 0, 1],
+              [1, 0, 0, 0, 0, 0, 0, 0, 5, 0, 0, 0, 2, 2, 0, 0, 0, 0, 0, 1],
+              [1, 7, 0, 0, 2, 2, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1],
+              [1, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1],
+              [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 7, 0, 0, 7, 0, 0, 0, 0, 1],
+              [1, 0, 2, 0, 0, 7, 0, 7, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1],
+              [1, 0, 0, 2, 0, 0, 4, 0, 0, 0, 0, 3, 0, 0, 3, 0, 0, 0, 0, 1],
+              [1, 0, 0, 0, 0, 0, 0, 0, 0, 2, 2, 2, 2, 2, 2, 2, 0, 0, 0, 1],
+              [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1],
+              [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 7, 0, 7, 0, 0, 0, 0, 2, 0, 1],
+              [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1],
+              [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2, 0, 2, 0, 2, 2, 2, 2, 2, 1],
+              [1, 0, 0, 0, 0, 0, 2, 2, 2, 6, 6, 6, 6, 6, 1, 1, 1, 1, 1, 1],
+              [1, 0, 0, 0, 0, 2, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
+              [1, 0, 0, 0, 2, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
+              [1, 2, 2, 2, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
                1]]  # the first row is going to be the dirt in the 5x5 grid. Defining where all the elements in the game will sit on the grid
+# The bottom row will be for the grass images
 
 world = World(world_data)
 
@@ -72,7 +97,6 @@ while GameIsRunning:
     world.draw()
     # calling the grid
     draw_grid()
-
 
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
