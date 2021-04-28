@@ -4,6 +4,9 @@ from pygame.locals import *
 # Initializing pygame
 pygame.init()
 
+clock = pygame.time.Clock()
+fps = 60
+
 # Creating the game window
 screen_width = 1000
 screen_height = 1000
@@ -28,19 +31,31 @@ tile_size = 50  # tile size will be 50x50 on the grid
 
 class Player():
     def __init__(self, x, y):
-        player_image = pygame.image.load('assets/guy1.png')
-        self.image = pygame.transform.scale(player_image, (40, 80))
+        self.anim_right = []
+        self.anim_left = []
+        self.index = 0
+        self.counter = 0
+        for num in range(1, 5):
+            player_image_right = pygame.image.load(f'assets/guy{num}.png')
+            player_image_right = pygame.transform.scale(player_image_right, (40, 80)) # loading in the player image and scaling in to size
+            player_image_left = pygame.transform.flip(player_image_right, True, False) # using the right image thats loaded and flipping it to the left
+            self.anim_right.append(player_image_right)
+            self.anim_left.append(player_image_left)
+        self.image = self.anim_right[self.index]
+
         self.rect = self.image.get_rect()
         # iving the image an coordinate
         self.rect.x = x
         self.rect.y = y
         self.velocity_y = 0
         self.jump = False
+        self.direction = 0 # usin the variable to determine whether the player is pressing left or riht
 
     def update(self):
         dx = 0
         dy = 0
-        # addin in controls for the player
+        anim_cooldown = 20 # 20 iterations need to pass before the next index
+        # adding in controls for the player
         key = pygame.key.get_pressed()
         if key [pygame.K_SPACE] and self.jump == False:
             self.velocity_y = -15
@@ -51,8 +66,36 @@ class Player():
         # calculating the new player position. Checking the collision of that new positiom and the adjustin the position when collinding with an object
         if key[pygame.K_LEFT]:
             dx -= 5
+            self.counter += 1
+            self.direction = -1
         if key[pygame.K_RIGHT]:
             dx += 5
+            self.counter += 1
+            self.direction = 1
+        if key[pygame.K_LEFT] == False and key [ pygame.K_RIGHT] == False: # resetting the counter and index when you not holdin dow left or riht buttoons
+            self.counter = 0
+            self.index = 0
+            if self.direction == 1:
+                # updating the animation with the next imae
+                self.image = self.anim_right[self.index]
+            if self.direction == -1:
+                # updating the animation with the next imae
+                self.image = self.anim_left[self.index]
+
+# addin in the animation for the character
+        self.counter += 1
+        if self.counter > anim_cooldown:
+            self.counter = 0
+            self.index += 1
+            if self.index >= len(self.anim_right):
+                self.index = 0
+            if self.direction == 1:
+                #updating the animation with the next imae
+                self.image = self.anim_right[self.index]
+            if self.direction == -1:
+                # updating the animation with the next imae
+                self.image = self.anim_left[self.index]
+
 
         # adding in some ravity when jumping
         self.velocity_y += 1
@@ -143,8 +186,10 @@ world_data = [[1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
 player = Player(100, screen_height - 130)
 world = World(world_data)
 
+
 GameIsRunning = True
 while GameIsRunning:
+    clock.tick(fps)
 
     # drawing the background image onto the screen
     screen.blit(background_image, (0, 0))
