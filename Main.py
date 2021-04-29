@@ -18,11 +18,15 @@ pygame.display.set_caption("Run Timmy, Fight Platformer")
 sun_image = pygame.image.load('assets/sun.png')
 background_image = pygame.image.load('assets/sky.png')
 restart_image = pygame.image.load('assets/restart_btn.png')
+start_image = pygame.image.load('assets/start_btn.png')
+exit_image = pygame.image.load('assets/exit_btn.png')
+
 
 # defining grid variables
 tile_size = 50  # tile size will be 50x50 on the grid
 game_over = 0
-
+# creating a variable to determine whether your in the main game or at the main menu so the start and exit buttons will appear
+main_menu = True
 
 
 # drawing a grid to help with the placement of the tiles and images
@@ -31,7 +35,7 @@ game_over = 0
 #         pygame.draw.line(screen, (255, 255, 255), (0, line * tile_size), (screen_width, line * tile_size))
 #         pygame.draw.line(screen, (255, 255, 255), (line * tile_size, 0), (line * tile_size, screen_height))
 
-class Button(): # creatin the class for the load, restart and save buttons
+class Button():  # creatin the class for the load, restart and save buttons
     def __init__(self, x, y, image):
         self.image = image
         self.rect = self.image.get_rect()
@@ -40,19 +44,19 @@ class Button(): # creatin the class for the load, restart and save buttons
         self.clicked = False
 
     def draw(self):
-        action = False # whatever the mosue button does
+        action = False  # whatever the mosue button does
         # checking to see if the button is being pressed throuh the mouse position
         position = pygame.mouse.get_pos()
 
         # checking to see if the mouse button has been pressed
         if self.rect.collidepoint(position):
-            if pygame.mouse.get_pressed()[0] == 1 and self.clicked == False: # the index 0 is referred to the left mosue button
+            if pygame.mouse.get_pressed()[
+                0] == 1 and self.clicked == False:  # the index 0 is referred to the left mosue button
                 action = True
                 self.clicked = True
-        if pygame.mouse.get_pressed()[0] == 0: # if you've released the mouse button its not pressed and nothing with happen
+        if pygame.mouse.get_pressed()[
+            0] == 0:  # if you've released the mouse button its not pressed and nothing with happen
             self.clicked = False
-
-
 
         # drawing the vutton images on the screen
         screen.blit(self.image, self.rect)
@@ -60,11 +64,9 @@ class Button(): # creatin the class for the load, restart and save buttons
         return action
 
 
-
-
 class Player():
     def __init__(self, x, y):
-        self.reset(x, y) # calling the reset method, so when the player dies, The character will be respawned at the beginning
+        self.reset(x,y)  # calling the reset method, so when the player dies, The character will be respawned at the beginning
 
     def update(self, game_over):
         dx = 0
@@ -74,7 +76,8 @@ class Player():
         if game_over == 0:
             # adding in controls for the player
             key = pygame.key.get_pressed()
-            if key[pygame.K_SPACE] and self.jump == False and self.in_air == False:
+            if key[
+                pygame.K_SPACE] and self.jump == False and self.in_air == False:  # the player will only be able to jump if he is on the round
                 self.velocity_y = -15
                 self.jump = True
             if key[pygame.K_SPACE] == False:
@@ -121,12 +124,12 @@ class Player():
             dy += self.velocity_y
 
             # check for collision
-            self.in_air = True # checkin if the player is in the air, assuming he is..
+            self.in_air = True  # checkin if the player is in the air, assuming he is..
             for tile in world.tile_list:  # lookin for collison in the world tile list from the y direction
                 # checking for collision in x direction
                 if tile[1].colliderect(self.rect.x + dx, self.rect.y, self.width, self.height):
                     dx = 0
-                    #checking for collison in the y direction
+                    # checking for collison in the y direction
                 if tile[1].colliderect(self.rect.x, self.rect.y + dy, self.width,
                                        self.height):  # creatin a new collision detection box which wil act as a temporary collision box, in orde to make adjustmenst before the actual collision
                     # checkin if the player is below the ground. if the player is jumping
@@ -139,15 +142,13 @@ class Player():
                         self.velocity_y = 0
                         self.in_air = False
 
-            #checking if the character collides with the enemies
+            # checking if the character collides with the enemies
             if pygame.sprite.spritecollide(self, blob_group, False):
                 game_over = -1
 
             # checking if the player collides with the lava
             if pygame.sprite.spritecollide(self, lava_group, False):
                 game_over = -1
-
-
 
             # updating player coordinates
             self.rect.x += dx
@@ -157,8 +158,6 @@ class Player():
             self.image = self.player_died
             if self.rect.y > 250:
                 self.rect.y -= 5
-
-
 
         screen.blit(self.image, self.rect)  # drawing the player on the screen
         pygame.draw.rect(screen, (255, 255, 255), self.rect, 2)
@@ -229,7 +228,6 @@ class World():
                     lava = Lava(column_count * tile_size, row_count * tile_size + (tile_size // 2))
                     lava_group.add(lava)
 
-
                 column_count += 1  # increasing the tiles in the rows by 1
             row_count += 1
 
@@ -253,21 +251,20 @@ class Enemy(pygame.sprite.Sprite):
     def update(self):
         self.rect.x += self.move_direction
         self.move_counter += 1
-        if abs(self.move_counter) > 50: # changing it to an absolutin so that even if the its neative it going to convert it to a positive value
+        if abs(
+                self.move_counter) > 50:  # changing it to an absolutin so that even if the its neative it going to convert it to a positive value
             self.move_direction *= -1
             self.move_counter *= -1
+
 
 class Lava(pygame.sprite.Sprite):
     def __init__(self, x, y):
         pygame.sprite.Sprite.__init__(self)  # the enemy class is a child of the sprite clasas
         lava_image = pygame.image.load('assets/lava.png')
-        self.image = pygame.transform.scale(lava_image,(tile_size, tile_size // 2))
+        self.image = pygame.transform.scale(lava_image, (tile_size, tile_size // 2))
         self.rect = self.image.get_rect()
         self.rect.x = x
         self.rect.y = y
-
-
-
 
 
 world_data = [[1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
@@ -301,6 +298,9 @@ world = World(world_data)
 
 # creatin buttons
 restart_button = Button(screen_width // 2 - 50, screen_height // 2 + 100, restart_image)
+# loading in the menu start button and exit button
+start_button = Button(screen_width // 2 - 350, screen_height // 2, start_image) # the start iumage will be on the left hand side just offset from the center of the screen
+exit_button = Button(screen_width // 2 + 150, screen_height // 2, exit_image) # the exit buttom will be on the right hand side, next to the start button
 
 GameIsRunning = True
 while GameIsRunning:
@@ -310,25 +310,29 @@ while GameIsRunning:
     screen.blit(background_image, (0, 0))
     screen.blit(sun_image, (100, 100))
 
-    world.draw()
+    if main_menu == True:
+        # drawing the buttons on the screen
+        if exit_button.draw():
+            GameIsRunning = False
+        if start_button.draw():
+            main_menu = False
 
-    if game_over == 0:
-        blob_group.update()
+    else: # if the main menu is not tru, the game will begin and the below code will run
+        world.draw()
 
+        if game_over == 0:
+            blob_group.update()
 
-    blob_group.draw(screen)
-    lava_group.draw(screen)
+        blob_group.draw(screen)
+        lava_group.draw(screen)
 
-    game_over = player.update(game_over)
+        game_over = player.update(game_over)
 
-     # if player has died calling the restart button
-    if game_over == - 1:
-        if restart_button.draw():
-            player.reset(100, screen_height - 130)
-            game_over = 0
-
-
-
+        # if player has died calling the restart button
+        if game_over == - 1:
+            if restart_button.draw():
+                player.reset(100, screen_height - 130)
+                game_over = 0
 
     # calling the grid
     # draw_grid()
