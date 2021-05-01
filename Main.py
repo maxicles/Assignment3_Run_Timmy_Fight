@@ -1,5 +1,7 @@
 import pygame
 from pygame.locals import *
+import pickle
+from os import path
 
 # Initializing pygame
 pygame.init()
@@ -14,6 +16,16 @@ screen_height = 1000
 screen = pygame.display.set_mode((screen_width, screen_height))
 pygame.display.set_caption("Run Timmy, Fight Platformer")
 
+
+
+# defining grid variables
+tile_size = 50  # tile size will be 50x50 on the grid
+game_over = 0
+# creating a variable to determine whether your in the main game or at the main menu so the start and exit buttons will appear
+main_menu = True
+level = 0
+maxLevel = 7
+
 # Loading some images into the game to store them
 sun_image = pygame.image.load('assets/sun.png')
 background_image = pygame.image.load('assets/sky.png')
@@ -22,18 +34,25 @@ start_image = pygame.image.load('assets/start_btn.png')
 exit_image = pygame.image.load('assets/exit_btn.png')
 
 
-# defining grid variables
-tile_size = 50  # tile size will be 50x50 on the grid
-game_over = 0
-# creating a variable to determine whether your in the main game or at the main menu so the start and exit buttons will appear
-main_menu = True
-
-
 # drawing a grid to help with the placement of the tiles and images
 # def draw_grid():
 #     for line in range(0, 20):
 #         pygame.draw.line(screen, (255, 255, 255), (0, line * tile_size), (screen_width, line * tile_size))
 #         pygame.draw.line(screen, (255, 255, 255), (line * tile_size, 0), (line * tile_size, screen_height))
+
+def reset_level(level):
+    player.reset(100,screen_height - 130)
+    blob_group.empty()
+    lava_group.empty()
+    exit_group.empty()
+
+    # if the player dies the the below fuction will rset the level data
+    if path.exists(f'level{level}_data'):
+        pickle_in = open(f'level{level}_data', 'rb')
+        world_data = pickle_in.load(pickle_in)
+        world = World(world_data)
+        return world
+
 
 class Button():  # creatin the class for the load, restart and save buttons
     def __init__(self, x, y, image):
@@ -66,7 +85,8 @@ class Button():  # creatin the class for the load, restart and save buttons
 
 class Player():
     def __init__(self, x, y):
-        self.reset(x,y)  # calling the reset method, so when the player dies, The character will be respawned at the beginning
+        self.reset(x,
+                   y)  # calling the reset method, so when the player dies, The character will be respawned at the beginning
 
     def update(self, game_over):
         dx = 0
@@ -170,8 +190,8 @@ class Player():
         self.index = 0
         self.counter = 0
 
-        for num in range(1, 5):
-            player_image_right = pygame.image.load(f'assets/guy{num}.png')
+        for num in range(1, 9):
+            player_image_right = pygame.image.load(f'assets/player{num}.png')
             player_image_right = pygame.transform.scale(player_image_right,
                                                         (40, 80))  # loading in the player image and scaling in to size
             player_image_left = pygame.transform.flip(player_image_right, True,
@@ -197,8 +217,8 @@ class Player():
 class World():
     def __init__(self, data):
         self.tile_list = []
-        dirt_image = pygame.image.load('assets/dirt.png')  # loading the images
-        grass_image = pygame.image.load('assets/grass.png')
+        dirt_image = pygame.image.load('assets/tiles_brown.png')  # loading the images
+        grass_image = pygame.image.load('assets/tiles_Green.png')
         row_count = 0
 
         # below i want to be able to apply the dirt image to each of the rows one by one
@@ -227,6 +247,9 @@ class World():
                 if tile == 6:
                     lava = Lava(column_count * tile_size, row_count * tile_size + (tile_size // 2))
                     lava_group.add(lava)
+                if tile == 8:
+                    exit = ExitDoor(column_count * tile_size, row_count * tile_size )
+                    exit_group.add(exit)
 
                 column_count += 1  # increasing the tiles in the rows by 1
             row_count += 1
@@ -234,8 +257,8 @@ class World():
     def draw(self):
         for tile in self.tile_list:  # going throuh each of the tiles in the list and drawin them on the screen
             screen.blit(tile[0], tile[1])
-            pygame.draw.rect(screen, (255, 255, 255), tile[1],
-                             2)  # checking for a collision between the player and the background tiles
+            pygame.draw.rect(screen, (255, 255, 255), tile[1], 2),
+                               # checking for a collision between the player and the background tiles
 
 
 class Enemy(pygame.sprite.Sprite):
@@ -252,7 +275,7 @@ class Enemy(pygame.sprite.Sprite):
         self.rect.x += self.move_direction
         self.move_counter += 1
         if abs(
-                self.move_counter) > 50:  # changing it to an absolutin so that even if the its neative it going to convert it to a positive value
+                self.move_counter) > 50:  # changing it to an absolutin so that even if the its negative its going to convert it to a positive value
             self.move_direction *= -1
             self.move_counter *= -1
 
@@ -267,7 +290,17 @@ class Lava(pygame.sprite.Sprite):
         self.rect.y = y
 
 
-world_data = [[1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
+class ExitDoor(pygame.sprite.Sprite):
+    def __init__(self, x, y):
+        pygame.sprite.Sprite.__init__(self)
+        image = pygame.image.load('assets/Door.png')
+        self.image = pygame.transform.scale(image, (tile_size, int(tile_size * 1.5)))
+        self.rect = self.image.get_rect()
+        self.rect.x = x
+        self.rect.y = y
+
+# the world data is just a list of numbers tha represent the grass, dirt and moving platforms
+world_data = [[1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1], # this is the same data that is created and stored in the level_data files. This one is level 7
               [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1],
               [1, 0, 0, 0, 0, 7, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 8, 1],
               [1, 0, 0, 0, 0, 2, 0, 0, 0, 0, 0, 7, 0, 0, 0, 0, 0, 2, 2, 1],
@@ -287,20 +320,28 @@ world_data = [[1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
               [1, 0, 0, 0, 0, 2, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
               [1, 0, 0, 0, 2, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
               [1, 2, 2, 2, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
-               1]]  # the first row is going to be the dirt in the 5x5 grid. Defining where all the elements in the game will sit on the grid
+               1]] # the first row is going to be the dirt in the 5x5 grid. Defining where all the elements in the game will sit on the grid
 # The bottom row will be for the grass images
 
 # instances created to be able to run it in the game
 player = Player(100, screen_height - 130)
 blob_group = pygame.sprite.Group()
 lava_group = pygame.sprite.Group()
+exit_group = pygame.sprite.Group()
+
+# loadin in the level data to create the world
+if path.exists(f'level{level}_data'):
+    pickle_in = open(f'level{level}_data', 'rb')
+    level_data = pickle.load(pickle_in)
 world = World(world_data)
 
 # creatin buttons
 restart_button = Button(screen_width // 2 - 50, screen_height // 2 + 100, restart_image)
 # loading in the menu start button and exit button
-start_button = Button(screen_width // 2 - 350, screen_height // 2, start_image) # the start iumage will be on the left hand side just offset from the center of the screen
-exit_button = Button(screen_width // 2 + 150, screen_height // 2, exit_image) # the exit buttom will be on the right hand side, next to the start button
+start_button = Button(screen_width // 2 - 350, screen_height // 2,
+                      start_image)  # the start iumage will be on the left hand side just offset from the center of the screen
+exit_button = Button(screen_width // 2 + 150, screen_height // 2,
+                     exit_image)  # the exit buttom will be on the right hand side, next to the start button
 
 GameIsRunning = True
 while GameIsRunning:
@@ -317,7 +358,7 @@ while GameIsRunning:
         if start_button.draw():
             main_menu = False
 
-    else: # if the main menu is not tru, the game will begin and the below code will run
+    else:  # if the main menu is not true, the game will begin and the below code will run
         world.draw()
 
         if game_over == 0:
@@ -325,14 +366,35 @@ while GameIsRunning:
 
         blob_group.draw(screen)
         lava_group.draw(screen)
+        exit_group.draw(screen)
 
         game_over = player.update(game_over)
 
         # if player has died calling the restart button
         if game_over == - 1:
             if restart_button.draw():
-                player.reset(100, screen_height - 130)
+                #resettin the level
+                world_data = []
+                world = reset_level(level)
                 game_over = 0
+
+        #if the player has complete the level
+        if game_over == 1:
+            if restart_button.draw():
+                # resettin the game and the proceed to the next level
+                level += 1
+                if level <= maxLevel:
+                    # reset all the levels and go back to level 1
+                    world_data = []
+                    world = reset_level(level)
+                    game_over = 0
+                else:
+                    if restart_button.draw():
+                        level = 1
+                        #reset from level 1
+                        world_data = []
+                        world = reset_level(level)
+                        game_over = 0
 
     # calling the grid
     # draw_grid()
