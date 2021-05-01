@@ -23,8 +23,9 @@ tile_size = 50  # tile size will be 50x50 on the grid
 game_over = 0
 # creating a variable to determine whether your in the main game or at the main menu so the start and exit buttons will appear
 main_menu = True
-level = 0
+level = 1
 maxLevel = 7
+score = 0
 
 # Loading some images into the game to store them
 sun_image = pygame.image.load('assets/sun.png')
@@ -49,8 +50,8 @@ def reset_level(level):
     # if the player dies the the below fuction will rset the level data
     if path.exists(f'level{level}_data'):
         pickle_in = open(f'level{level}_data', 'rb')
-        world_data = pickle_in.load(pickle_in)
-        world = World(world_data)
+        level_data = pickle_in.load(pickle_in)
+        world = World(level_data)
         return world
 
 
@@ -98,7 +99,7 @@ class Player():
             key = pygame.key.get_pressed()
             if key[
                 pygame.K_SPACE] and self.jump == False and self.in_air == False:  # the player will only be able to jump if he is on the round
-                self.velocity_y = -15
+                self.velocity_y = -18
                 self.jump = True
             if key[pygame.K_SPACE] == False:
                 self.jump = False
@@ -193,7 +194,7 @@ class Player():
         for num in range(1, 9):
             player_image_right = pygame.image.load(f'assets/player{num}.png')
             player_image_right = pygame.transform.scale(player_image_right,
-                                                        (40, 80))  # loading in the player image and scaling in to size
+                                                        (35, 70))  # loading in the player image and scaling in to size
             player_image_left = pygame.transform.flip(player_image_right, True,
                                                       False)  # using the right image thats loaded and flipping it to the left
             self.anim_right.append(player_image_right)
@@ -299,29 +300,29 @@ class ExitDoor(pygame.sprite.Sprite):
         self.rect.x = x
         self.rect.y = y
 
-# the world data is just a list of numbers tha represent the grass, dirt and moving platforms
-world_data = [[1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1], # this is the same data that is created and stored in the level_data files. This one is level 7
-              [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1],
-              [1, 0, 0, 0, 0, 7, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 8, 1],
-              [1, 0, 0, 0, 0, 2, 0, 0, 0, 0, 0, 7, 0, 0, 0, 0, 0, 2, 2, 1],
-              [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2, 2, 0, 7, 0, 5, 0, 0, 0, 1],
-              [1, 0, 0, 0, 0, 0, 0, 0, 5, 0, 0, 0, 2, 2, 0, 0, 0, 0, 0, 1],
-              [1, 7, 0, 0, 2, 2, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1],
-              [1, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1],
-              [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 7, 0, 0, 7, 0, 0, 0, 0, 1],
-              [1, 0, 2, 0, 0, 7, 0, 7, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1],
-              [1, 0, 0, 2, 0, 0, 4, 0, 0, 0, 0, 3, 0, 0, 3, 0, 0, 0, 0, 1],
-              [1, 0, 0, 0, 0, 0, 0, 0, 0, 2, 2, 2, 2, 2, 2, 2, 0, 0, 0, 1],
-              [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1],
-              [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 7, 0, 7, 0, 0, 0, 0, 2, 0, 1],
-              [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1],
-              [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2, 0, 2, 0, 2, 2, 2, 2, 2, 1],
-              [1, 0, 0, 0, 0, 0, 2, 2, 2, 6, 6, 6, 6, 6, 1, 1, 1, 1, 1, 1],
-              [1, 0, 0, 0, 0, 2, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
-              [1, 0, 0, 0, 2, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
-              [1, 2, 2, 2, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
-               1]] # the first row is going to be the dirt in the 5x5 grid. Defining where all the elements in the game will sit on the grid
-# The bottom row will be for the grass images
+# # the world data is just a list of numbers tha represent the grass, dirt and moving platforms
+# world_data = [[1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1], # this is the same data that is created and stored in the level_data files. This one is level 7
+#               [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1],
+#               [1, 0, 0, 0, 0, 7, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 8, 1],
+#               [1, 0, 0, 0, 0, 2, 0, 0, 0, 0, 0, 7, 0, 0, 0, 2, 0, 0, 0, 1],
+#               [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2, 2, 0, 7, 0, 5, 0, 2, 2, 1],
+#               [1, 0, 0, 0, 0, 0, 0, 0, 5, 0, 0, 0, 2, 2, 0, 0, 0, 0, 0, 1],
+#               [1, 7, 0, 0, 2, 2, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1],
+#               [1, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1],
+#               [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 7, 0, 0, 7, 0, 0, 0, 0, 1],
+#               [1, 0, 2, 0, 0, 7, 0, 7, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1],
+#               [1, 0, 0, 2, 0, 0, 4, 0, 0, 0, 0, 3, 0, 0, 3, 0, 0, 0, 0, 1],
+#               [1, 0, 0, 0, 0, 0, 0, 0, 0, 2, 2, 2, 2, 2, 2, 2, 0, 0, 0, 1],
+#               [1, 0, 0, 0, 0, 0, 2, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1],
+#               [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 7, 0, 7, 0, 0, 0, 0, 2, 0, 1],
+#               [1, 0, 0, 2, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1],
+#               [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2, 0, 2, 0, 2, 2, 2, 2, 2, 1],
+#               [1, 0, 0, 0, 0, 0, 2, 2, 2, 6, 6, 6, 6, 6, 1, 1, 1, 1, 1, 1],
+#               [1, 0, 0, 0, 0, 2, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
+#               [1, 0, 0, 0, 2, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
+#               [1, 2, 2, 2, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+#                1]] # the first row is going to be the dirt in the 5x5 grid. Defining where all the elements in the game will sit on the grid
+# # The bottom row will be for the grass images
 
 # instances created to be able to run it in the game
 player = Player(100, screen_height - 130)
@@ -333,7 +334,7 @@ exit_group = pygame.sprite.Group()
 if path.exists(f'level{level}_data'):
     pickle_in = open(f'level{level}_data', 'rb')
     level_data = pickle.load(pickle_in)
-world = World(world_data)
+world = World(level_data)
 
 # creatin buttons
 restart_button = Button(screen_width // 2 - 50, screen_height // 2 + 100, restart_image)
@@ -360,6 +361,10 @@ while GameIsRunning:
 
     else:  # if the main menu is not true, the game will begin and the below code will run
         world.draw()
+
+        # if score == 100:
+        #     level+= 1
+        #     player.lives += 1
 
         if game_over == 0:
             blob_group.update()
