@@ -24,7 +24,7 @@ game_over = 0
 # creating a variable to determine whether your in the main game or at the main menu so the start and exit buttons will appear
 main_menu = True
 level = 1
-maxLevel = 7
+maxLevel = 3
 score = 0
 
 # Loading some images into the game to store them
@@ -41,18 +41,19 @@ exit_image = pygame.image.load('assets/exit_btn.png')
 #         pygame.draw.line(screen, (255, 255, 255), (0, line * tile_size), (screen_width, line * tile_size))
 #         pygame.draw.line(screen, (255, 255, 255), (line * tile_size, 0), (line * tile_size, screen_height))
 
-def reset_level(level):
-    player.reset(100,screen_height - 130)
-    blob_group.empty()
+def reset_level(level): # creatin a function for the level to reset when the player has died
+    player.reset(100, screen_height - 130) # resetting the player back to the start of the game
+    enemy_group.empty() # emptying the sprite Groups so that the ones that were there on the previous level disappear
     lava_group.empty()
     exit_group.empty()
 
-    # if the player dies the the below fuction will rset the level data
+    # if the player dies the the below fuction will reset the level data creating the world again.
     if path.exists(f'level{level}_data'):
         pickle_in = open(f'level{level}_data', 'rb')
-        level_data = pickle_in.load(pickle_in)
-        world = World(level_data)
-        return world
+        world_data = pickle_in.load(pickle_in)
+    world = World(world_data)
+
+    return world  # loading all the levels again and returnin the ame world back into the game loop
 
 
 class Button():  # creatin the class for the load, restart and save buttons
@@ -144,7 +145,7 @@ class Player():
                 self.velocity_y = 10
             dy += self.velocity_y
 
-            # check for collision
+            # check for collision with the enemies
             self.in_air = True  # checkin if the player is in the air, assuming he is..
             for tile in world.tile_list:  # lookin for collison in the world tile list from the y direction
                 # checking for collision in x direction
@@ -164,12 +165,16 @@ class Player():
                         self.in_air = False
 
             # checking if the character collides with the enemies
-            if pygame.sprite.spritecollide(self, blob_group, False):
+            if pygame.sprite.spritecollide(self, enemy_group, False):
                 game_over = -1
 
             # checking if the player collides with the lava
             if pygame.sprite.spritecollide(self, lava_group, False):
-                game_over = -1
+                game_over = -1 # if the player hits the lava, they die
+
+            # checkin if the player collides with the exit door and if you do, you proceed to the next level
+            if pygame.sprite.spritecollide(self, exit_group, False):
+                game_over = 1
 
             # updating player coordinates
             self.rect.x += dx
@@ -242,14 +247,14 @@ class World():
                     image_rect.y = row_count * tile_size
                     tile = (image, image_rect)
                     self.tile_list.append(tile)
-                if tile == 3:
+                if tile == 3: # in the level data each number 3 will represent the enemies
                     blob = Enemy(column_count * tile_size, row_count * tile_size + 15)
-                    blob_group.add(blob)
-                if tile == 6:
-                    lava = Lava(column_count * tile_size, row_count * tile_size + (tile_size // 2))
+                    enemy_group.add(blob)
+                if tile == 6: # in the level data each number 6 will represent where the lava is placed
+                    lava = Lava(column_count * tile_size, row_count * tile_size + (tile_size // 2)) # the lava image is half the size of the tile. Scalin it up by 2 to fit
                     lava_group.add(lava)
-                if tile == 8:
-                    exit = ExitDoor(column_count * tile_size, row_count * tile_size )
+                if tile == 8: # the number 8 will represent the level completion door
+                    exit = ExitDoor(column_count * tile_size, row_count * tile_size - (tile_size // 2))
                     exit_group.add(exit)
 
                 column_count += 1  # increasing the tiles in the rows by 1
@@ -301,7 +306,7 @@ class ExitDoor(pygame.sprite.Sprite):
         self.rect.y = y
 
 # # the world data is just a list of numbers tha represent the grass, dirt and moving platforms
-# world_data = [[1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1], # this is the same data that is created and stored in the level_data files. This one is level 7
+# world_data = [[1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1], # this is the same data that is created and stored in the level_data files. This one is level 2
 #               [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1],
 #               [1, 0, 0, 0, 0, 7, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 8, 1],
 #               [1, 0, 0, 0, 0, 2, 0, 0, 0, 0, 0, 7, 0, 0, 0, 2, 0, 0, 0, 1],
@@ -326,15 +331,15 @@ class ExitDoor(pygame.sprite.Sprite):
 
 # instances created to be able to run it in the game
 player = Player(100, screen_height - 130)
-blob_group = pygame.sprite.Group()
+enemy_group = pygame.sprite.Group()
 lava_group = pygame.sprite.Group()
 exit_group = pygame.sprite.Group()
 
 # loadin in the level data to create the world
-if path.exists(f'level{level}_data'):
-    pickle_in = open(f'level{level}_data', 'rb')
-    level_data = pickle.load(pickle_in)
-world = World(level_data)
+if path.exists(f'level{level}_data'): # checkin to see if the level data files exits in the directory
+    pickle_in = open(f'level{level}_data', 'rb') # if it exists used the pickle module to load the data in
+    world_data = pickle.load(pickle_in)
+world = World(world_data)
 
 # creatin buttons
 restart_button = Button(screen_width // 2 - 50, screen_height // 2 + 100, restart_image)
@@ -366,10 +371,10 @@ while GameIsRunning:
         #     level+= 1
         #     player.lives += 1
 
-        if game_over == 0:
-            blob_group.update()
+        if game_over == 0: # if the player dies, reset the enemies
+            enemy_group.update()
 
-        blob_group.draw(screen)
+        enemy_group.draw(screen)
         lava_group.draw(screen)
         exit_group.draw(screen)
 
@@ -379,27 +384,26 @@ while GameIsRunning:
         if game_over == - 1:
             if restart_button.draw():
                 #resettin the level
-                world_data = []
+                world_data = [] # clear the level data
                 world = reset_level(level)
                 game_over = 0
 
         #if the player has complete the level
         if game_over == 1:
-            if restart_button.draw():
-                # resettin the game and the proceed to the next level
-                level += 1
-                if level <= maxLevel:
-                    # reset all the levels and go back to level 1
+            # resettin the game and the proceed to the next level
+            level += 1 # increasing the level by one when the player completes a level
+            if level <= maxLevel:
+                # reset all the levels and go back to level 1
+                world_data = [] # clearin the current level data that exists
+                world = reset_level(level) # passin the reset function that clears the level and creates the new level based on the level data files and returnin it
+                game_over = 0 # resetting everyhting
+            else:
+                if restart_button.draw():
+                    level = 1
+                    #reset from level 1
                     world_data = []
                     world = reset_level(level)
                     game_over = 0
-                else:
-                    if restart_button.draw():
-                        level = 1
-                        #reset from level 1
-                        world_data = []
-                        world = reset_level(level)
-                        game_over = 0
 
     # calling the grid
     # draw_grid()
