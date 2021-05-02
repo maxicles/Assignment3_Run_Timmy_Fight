@@ -2,9 +2,12 @@ import pygame
 from pygame.locals import *
 import pickle
 from os import path
+from pygame import mixer
 
 # Initializing pygame
 pygame.init()
+
+mixer.init()
 
 clock = pygame.time.Clock()
 fps = 60
@@ -47,17 +50,30 @@ exit_image = pygame.image.load('assets/exit_btn.png')
 #         pygame.draw.line(screen, (255, 255, 255), (0, line * tile_size), (screen_width, line * tile_size))
 #         pygame.draw.line(screen, (255, 255, 255), (line * tile_size, 0), (line * tile_size, screen_height))
 
+#loading the music and sound effects
+coinSound = pygame.mixer.Sound('assets/coinSound.wav')
+coinSound.set_volume(0.5) # reducing the sound voulume of the coin by half
+jumpSound = pygame.mixer.Sound('assets/jumpSound.wav')
+jumpSound.set_volume(0.5)
+gameoverSound = pygame.mixer.Sound('assets/gameoverSound.wav')
+gameoverSound.set_volume(0.5)
+pygame.mixer.music.load('assets/music.wav')
+pygame.mixer.music.play()
+
+
+
+
 # drawing the text of the score and how many coins collected
 def draw_text(text, font, text_column, x, y):
     text_image = font.render(text, True, text_column)
     screen.blit(text_image, (x,y))
 
 
-def reset_level(level): # creatin a function for the level to reset when the player has died
-    player.reset(100, screen_height - 130) # resetting the player back to the start of the game
-    enemy_group.empty() # emptying the sprite Groups so that the ones that were there on the previous level disappear
-    lava_group.empty()
-    exit_group.empty()
+# def reset_level(level): # creatin a function for the level to reset when the player has died
+#     player.reset(100, screen_height - 130) # resetting the player back to the start of the game
+#     enemy_group.empty() # emptying the sprite Groups so that the ones that were there on the previous level disappear
+#     lava_group.empty()
+#     exit_group.empty()
 
     # # if the player dies the the below fuction will reset the level data creating the world again.
     # if path.exists(f'level{level}_data'):
@@ -112,6 +128,7 @@ class Player():
             key = pygame.key.get_pressed()
             if key[
                 pygame.K_SPACE] and self.jump == False and self.in_air == False:  # the player will only be able to jump if he is on the round
+                jumpSound.play()
                 self.velocity_y = -18
                 self.jump = True
             if key[pygame.K_SPACE] == False:
@@ -179,10 +196,12 @@ class Player():
             # checking if the character collides with the enemies
             if pygame.sprite.spritecollide(self, enemy_group, False):
                 game_over = -1
+                gameoverSound.play()
 
             # checking if the player collides with the lava
             if pygame.sprite.spritecollide(self, lava_group, False):
                 game_over = -1 # if the player hits the lava, they die
+                gameoverSound.play()
 
             # checkin if the player collides with the exit door and if you do, you proceed to the next level
             if pygame.sprite.spritecollide(self, exit_group, False):
@@ -407,6 +426,7 @@ while GameIsRunning:
             #updatin the score and checkin if a coin has been collected
             if pygame.sprite.spritecollide(player, coin_group, True):
                 score += 1
+                coinSound.play()
             draw_text('X ' + str(score), fontScore, black, tile_size - 10, 10)
 
 
@@ -422,7 +442,7 @@ while GameIsRunning:
             if restart_button.draw():
                 #resettin the level
                 world_data = [] # clear the level data
-                world = reset_level(level)
+                # world = reset_level(level)
                 game_over = 0
                 # reseetin the score back to 0 when the player dies
                 score = 0
@@ -434,7 +454,7 @@ while GameIsRunning:
             if level <= maxLevel:
                 # reset all the levels and go back to level 1
                 world_data = [] # clearin the current level data that exists
-                world = reset_level(level) # passin the reset function that clears the level and creates the new level based on the level data files and returnin it
+                # world = reset_level(level) # passin the reset function that clears the level and creates the new level based on the level data files and returnin it
                 game_over = 0 # resetting everyhting
             else:
                 draw_text('YOU WON!!', font, green, (screen_width // 2) - 140, screen_height // 2)
@@ -442,7 +462,7 @@ while GameIsRunning:
                     level = 1
                     #reset from level 1
                     world_data = []
-                    world = reset_level(level)
+                    # world = reset_level(level)
                     game_over = 0
                     score = 0
 
