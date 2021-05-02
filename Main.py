@@ -16,7 +16,13 @@ screen_height = 1000
 screen = pygame.display.set_mode((screen_width, screen_height))
 pygame.display.set_caption("Run Timmy, Fight Platformer")
 
+#defining the text fonts
+fontScore = pygame.font.SysFont('Arial', 40)
+font = pygame.font.SysFont('Arial', 50)
 
+#font colors
+black = (0, 0, 0)
+green = (0, 255, 0)
 
 # defining grid variables
 tile_size = 50  # tile size will be 50x50 on the grid
@@ -24,7 +30,7 @@ game_over = 0
 # creating a variable to determine whether your in the main game or at the main menu so the start and exit buttons will appear
 main_menu = True
 level = 1
-maxLevel = 3
+maxLevel = 2
 score = 0
 
 # Loading some images into the game to store them
@@ -41,17 +47,23 @@ exit_image = pygame.image.load('assets/exit_btn.png')
 #         pygame.draw.line(screen, (255, 255, 255), (0, line * tile_size), (screen_width, line * tile_size))
 #         pygame.draw.line(screen, (255, 255, 255), (line * tile_size, 0), (line * tile_size, screen_height))
 
+# drawing the text of the score and how many coins collected
+def draw_text(text, font, text_column, x, y):
+    text_image = font.render(text, True, text_column)
+    screen.blit(text_image, (x,y))
+
+
 def reset_level(level): # creatin a function for the level to reset when the player has died
     player.reset(100, screen_height - 130) # resetting the player back to the start of the game
     enemy_group.empty() # emptying the sprite Groups so that the ones that were there on the previous level disappear
     lava_group.empty()
     exit_group.empty()
 
-    # if the player dies the the below fuction will reset the level data creating the world again.
-    if path.exists(f'level{level}_data'):
-        pickle_in = open(f'level{level}_data', 'rb')
-        world_data = pickle_in.load(pickle_in)
-    world = World(world_data)
+    # # if the player dies the the below fuction will reset the level data creating the world again.
+    # if path.exists(f'level{level}_data'):
+    #     pickle_in = open(f'level{level}_data', 'rb')
+    #     world_data = pickle_in.load(pickle_in)
+    # world = World(world_data)
 
     return world  # loading all the levels again and returnin the ame world back into the game loop
 
@@ -182,6 +194,7 @@ class Player():
 
         elif game_over == -1:
             self.image = self.player_died
+            draw_text('GAMEOVER!', font, black, screen_width // 2 - 200, screen_height // 2)
             if self.rect.y > 250:
                 self.rect.y -= 5
 
@@ -253,6 +266,9 @@ class World():
                 if tile == 6: # in the level data each number 6 will represent where the lava is placed
                     lava = Lava(column_count * tile_size, row_count * tile_size + (tile_size // 2)) # the lava image is half the size of the tile. Scalin it up by 2 to fit
                     lava_group.add(lava)
+                if tile == 7:
+                    coin = Coins(column_count * tile_size +( tile_size // 2), row_count * tile_size + (tile_size // 2))
+                    coin_group.add(coin)
                 if tile == 8: # the number 8 will represent the level completion door
                     exit = ExitDoor(column_count * tile_size, row_count * tile_size - (tile_size // 2))
                     exit_group.add(exit)
@@ -295,6 +311,15 @@ class Lava(pygame.sprite.Sprite):
         self.rect.x = x
         self.rect.y = y
 
+class Coins(pygame.sprite.Sprite):
+    def __init__(self, x, y):
+        pygame.sprite.Sprite.__init__(self)  # the enemy class is a child of the sprite clasas
+        lava_image = pygame.image.load('assets/coin.png')
+        self.image = pygame.transform.scale(lava_image, (tile_size // 2, tile_size // 2)) # divinding the witdh and height by 2 to make the coins smaller than the tiles
+        self.rect = self.image.get_rect()
+        # positioning the coins based on the center point of the image
+        self.rect.center = (x, y)
+
 
 class ExitDoor(pygame.sprite.Sprite):
     def __init__(self, x, y):
@@ -333,7 +358,13 @@ class ExitDoor(pygame.sprite.Sprite):
 player = Player(100, screen_height - 130)
 enemy_group = pygame.sprite.Group()
 lava_group = pygame.sprite.Group()
+coin_group = pygame.sprite.Group()
 exit_group = pygame.sprite.Group()
+
+
+#creating a coin image at the top to display the score
+coinScore = Coins(tile_size // 2, tile_size // 2)
+coin_group.add(coinScore)
 
 # loadin in the level data to create the world
 if path.exists(f'level{level}_data'): # checkin to see if the level data files exits in the directory
@@ -373,20 +404,28 @@ while GameIsRunning:
 
         if game_over == 0: # if the player dies, reset the enemies
             enemy_group.update()
+            #updatin the score and checkin if a coin has been collected
+            if pygame.sprite.spritecollide(player, coin_group, True):
+                score += 1
+            draw_text('X ' + str(score), fontScore, black, tile_size - 10, 10)
+
 
         enemy_group.draw(screen)
         lava_group.draw(screen)
+        coin_group.draw(screen)
         exit_group.draw(screen)
 
         game_over = player.update(game_over)
 
         # if player has died calling the restart button
-        if game_over == - 1:
+        if game_over == -1:
             if restart_button.draw():
                 #resettin the level
                 world_data = [] # clear the level data
                 world = reset_level(level)
                 game_over = 0
+                # reseetin the score back to 0 when the player dies
+                score = 0
 
         #if the player has complete the level
         if game_over == 1:
@@ -398,12 +437,14 @@ while GameIsRunning:
                 world = reset_level(level) # passin the reset function that clears the level and creates the new level based on the level data files and returnin it
                 game_over = 0 # resetting everyhting
             else:
+                draw_text('YOU WON!!', font, green, (screen_width // 2) - 140, screen_height // 2)
                 if restart_button.draw():
                     level = 1
                     #reset from level 1
                     world_data = []
                     world = reset_level(level)
                     game_over = 0
+                    score = 0
 
     # calling the grid
     # draw_grid()
