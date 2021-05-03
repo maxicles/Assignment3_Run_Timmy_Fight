@@ -65,19 +65,20 @@ def draw_text(text, font, text_column, x, y):
     text_image = font.render(text, True, text_column)
     screen.blit(text_image, (x, y))
 
+
 #
-# def reset_level(level):  # creatin a function for the level to reset when the player has died
-#     player.reset(100, screen_height - 130)  # resetting the player back to the start of the game
-#     enemy_group.empty()  # emptying the sprite Groups so that the ones that were there on the previous level disappear
-#     lava_group.empty()
-#     exit_group.empty()
-#
-#     # if the player dies the the below fuction will reset the level data creating the world again.#
-#     if path.exists(f'level{level}'):
-#         pickle_in = open(f'level{level}', 'rb')
-#         world_data = pickle_in.load(pickle_in)
-#     world = World(world_data)
-#     return world  # loading all the levels again and returnin the ame world back into the game loop
+def reset_level(level):  # creatin a function for the level to reset when the player has died
+    player.reset(100, screen_height - 130)  # resetting the player back to the start of the game
+    enemy_group.empty()  # emptying the sprite Groups so that the ones that were there on the previous level disappear
+    lava_group.empty()
+    exit_group.empty()
+
+    # # if the player dies the the below fuction will reset the level data creating the world again.#
+    # if path.exists(f'level{level}'):
+    #     pickle_in = open(f'level{level}', 'rb')
+    #     world_data = pickle_in.load(pickle_in)
+    world = World(world_data)
+    return world  # loading all the levels again and returnin the ame world back into the game loop
 
 
 class Button():  # creatin the class for the load, restart and save buttons
@@ -283,7 +284,7 @@ class World():
                     platform_Group.add(platform)
                 if tile == 6:  # in the level data each number 6 will represent where the lava is placed
                     lava = Lava(column_count * tile_size, row_count * tile_size + (
-                                tile_size // 2))  # the lava image is half the size of the tile. Scalin it up by 2 to fit
+                            tile_size // 2))  # the lava image is half the size of the tile. Scalin it up by 2 to fit
                     lava_group.add(lava)
                 if tile == 7:
                     coin = Coins(column_count * tile_size + (tile_size // 2), row_count * tile_size + (tile_size // 2))
@@ -358,7 +359,8 @@ class Coins(pygame.sprite.Sprite):
         pygame.sprite.Sprite.__init__(self)  # the enemy class is a child of the sprite clasas
         lava_image = pygame.image.load('assets/coin.png')
         self.image = pygame.transform.scale(lava_image, (
-        tile_size // 2, tile_size // 2))  # divinding the witdh and height by 2 to make the coins smaller than the tiles
+            tile_size // 2,
+            tile_size // 2))  # divinding the witdh and height by 2 to make the coins smaller than the tiles
         self.rect = self.image.get_rect()
         # positioning the coins based on the center point of the image
         self.rect.center = (x, y)
@@ -375,28 +377,50 @@ class ExitDoor(pygame.sprite.Sprite):
 
 
 # # the world data is just a list of numbers tha represent the grass, dirt and moving platforms
-world_data = [[1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1], # this is the same data that is created and stored in the level_data files. This one is level 2
-              [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1],
-              [1, 0, 0, 0, 0, 7, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 8, 1],
-              [1, 0, 0, 0, 0, 2, 0, 0, 0, 0, 0, 7, 0, 0, 0, 2, 0, 0, 0, 1],
-              [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2, 2, 0, 7, 0, 5, 0, 2, 2, 1],
-              [1, 0, 0, 0, 0, 0, 0, 0, 5, 0, 0, 0, 2, 2, 0, 0, 0, 0, 0, 1],
-              [1, 7, 0, 0, 2, 2, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1],
-              [1, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1],
-              [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 7, 0, 0, 7, 0, 0, 0, 0, 1],
-              [1, 0, 2, 0, 0, 7, 0, 7, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1],
-              [1, 0, 0, 2, 0, 0, 4, 0, 0, 0, 0, 3, 0, 0, 3, 0, 0, 0, 0, 1],
-              [1, 0, 0, 0, 0, 0, 0, 0, 0, 2, 2, 2, 2, 2, 2, 2, 0, 0, 0, 1],
-              [1, 0, 0, 0, 0, 0, 2, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1],
-              [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 7, 0, 7, 0, 0, 0, 0, 2, 0, 1],
-              [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1],
-              [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2, 0, 2, 0, 2, 2, 2, 2, 2, 1],
-              [1, 0, 0, 0, 0, 0, 2, 2, 2, 6, 6, 6, 6, 6, 1, 1, 1, 1, 1, 1],
-              [1, 0, 0, 0, 0, 2, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
-              [1, 0, 0, 0, 2, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
-              [1, 2, 2, 2, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
-               1]] # the first row is going to be the dirt in the 5x5 grid. Defining where all the elements in the game will sit on the grid
+world_data = [[1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
+               # this is the same data that is created and stored in the level_data files. This one is level 2
+               [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1],
+               [1, 0, 0, 0, 0, 7, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 8, 1],
+               [1, 0, 0, 0, 0, 2, 0, 0, 0, 0, 0, 7, 0, 0, 0, 2, 0, 0, 0, 1],
+               [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2, 2, 0, 7, 0, 5, 0, 2, 2, 1],
+               [1, 0, 0, 0, 0, 0, 0, 0, 5, 0, 0, 0, 2, 2, 0, 0, 0, 0, 0, 1],
+               [1, 7, 0, 0, 2, 2, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1],
+               [1, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1],
+               [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 7, 0, 0, 7, 0, 0, 0, 0, 1],
+               [1, 0, 2, 0, 0, 7, 0, 7, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1],
+               [1, 0, 0, 2, 0, 0, 4, 0, 0, 0, 0, 3, 0, 0, 3, 0, 0, 0, 0, 1],
+               [1, 0, 0, 0, 0, 0, 0, 0, 0, 2, 2, 2, 2, 2, 2, 2, 0, 0, 0, 1],
+               [1, 0, 0, 0, 0, 0, 2, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1],
+               [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 7, 0, 7, 0, 0, 0, 0, 2, 0, 1],
+               [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1],
+               [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2, 0, 2, 0, 2, 2, 2, 2, 2, 1],
+               [1, 0, 0, 0, 0, 0, 2, 2, 2, 6, 6, 6, 6, 6, 1, 1, 1, 1, 1, 1],
+               [1, 0, 0, 0, 0, 2, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
+               [1, 0, 0, 0, 2, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
+               [1, 2, 2, 2, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+                1]]  # the first row is going to be the dirt in the 5x5 grid. Defining where all the elements in the game will sit on the grid
 # The bottom row will be for the grass images
+
+# level2_data = [[1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
+#                [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1],
+#                [1, 0, 8, 0, 0, 7, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1],
+#                [1, 0, 2, 2, 0, 2, 0, 0, 0, 0, 0, 7, 0, 0, 0, 2, 0, 0, 0, 1],
+#                [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2, 2, 0, 7, 0, 5, 0, 2, 2, 1],
+#                [1, 0, 0, 0, 0, 7, 0, 0, 5, 0, 0, 0, 2, 2, 0, 0, 0, 0, 0, 1],
+#                [1, 7, 0, 0, 2, 2, 2, 0, 0, 0, 0, 7, 0, 0, 0, 0, 0, 0, 0, 1],
+#                [1, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1],
+#                [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 4, 0, 0, 0, 0, 0, 0, 0, 1],
+#                [1, 0, 2, 0, 0, 7, 0, 7, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1],
+#                [1, 0, 0, 2, 0, 0, 4, 0, 0, 0, 0, 7, 0, 0, 0, 0, 0, 0, 0, 1],
+#                [1, 0, 0, 0, 0, 0, 0, 0, 0, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1],
+#                [1, 0, 0, 4, 0, 0, 2, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1],
+#                [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 7, 0, 7, 2, 2, 0, 0, 0, 0, 1],
+#                [1, 0, 0, 0, 4, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 3, 0, 1],
+#                [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2, 0, 2, 0, 2, 2, 2, 2, 2, 1],
+#                [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2, 2, 2, 1, 1, 1, 1, 1, 1],
+#                [1, 0, 0, 0, 0, 2, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
+#                [1, 0, 0, 0, 2, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
+#                [1, 2, 2, 2, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1]]
 
 # instances created to be able to run it in the game
 player = Player(100, screen_height - 130)
@@ -466,25 +490,25 @@ while GameIsRunning:
                 # reseetin the score back to 0 when the player dies
                 score = 0
 
-        # if the player has complete the level
-        # if game_over == 1:
-        #     # resettin the game and the proceed to the next level
-        #     level += 1  # increasing the level by one when the player completes a level
-            # if level <= maxLevel:
-            #     # reset all the levels and go back to level 1
-            #     world_data = []  # clearin the current level data that exists
-            #     world = reset_level(
-            #         level)  # passin the reset function that clears the level and creates the new level based on the level data files and returnin it
-            #     game_over = 0  # resetting everyhting
-            # else:
-            #     draw_text('YOU WON!!', font, green, (screen_width // 2) - 140, screen_height // 2)
-            # if restart_button.draw():
-            #     level = 1
-            #     # reset from level 1
-            #     world_data = []
-            #     world = reset_level(level)
-            #     game_over = 0
-            #     score = 0
+        #
+        if game_over == 1:
+            # resettin the game and the proceed to the next level
+            level += 1  # increasing the level by one when the player completes a level
+            if level <= maxLevel:
+                # reset all the levels and go back to level 1
+                world_data = []  # clearin the current level data that exists
+                world = reset_level(
+                    level)  # passin the reset function that clears the level and creates the new level based on the level data files and returnin it
+                game_over = 0  # resetting everyhting
+            else:
+                draw_text('YOU WON!!', font, green, (screen_width // 2) - 140, screen_height // 2)
+            if restart_button.draw():
+                level = 1
+                # reset from level 1
+                world_data = []
+                world = reset_level(level)
+                game_over = 0
+                score = 0
 
     # calling the grid
     # draw_grid()
