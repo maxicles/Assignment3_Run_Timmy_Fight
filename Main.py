@@ -119,7 +119,8 @@ class Player():
     def update(self, game_over):
         dx = 0
         dy = 0
-        anim_cooldown = 20  # 20 iterations need to pass before the next index
+        anim_cooldown = 5  # 20 iterations need to pass before the next index
+        collision_threshold = 20
 
         if game_over == 0:
             # adding in controls for the player
@@ -204,6 +205,31 @@ class Player():
             # checkin if the player collides with the exit door and if you do, you proceed to the next level
             if pygame.sprite.spritecollide(self, exit_group, False):
                 game_over = 1
+
+            # collison with the platforms
+            #moving through each of the platforms individually and checkin if the player has collided with it
+            for platform in platform_Group:
+                if platform.rect.colliderect(self.rect.x + dx, self.rect.y, self.width, self.height):  #checkin for collision in the x direction
+                    dx = 0
+                if platform.rect.colliderect(self.rect.x + dy, self.rect.y, self.width,
+                                             self.height):  # checkin for collision in the y direction
+                # checking if the player is below the platform
+                    if ((self.rect.top + dy) - platform.rect.bottom) < collision_threshold:
+                        self.velocity_y = 0
+                        dy = platform.rect.bottom - self.rect.top
+
+                    #checkin if player is aboce the platform
+                    elif abs((self.rect.bottom + dy) - platform.rect.top) <collision_threshold:
+                        self.rect.bottom = platform.rect.top - 1# lands the the player on top of the platform and making sure you're able to still move on the platform
+                        dy = 0
+                        self.in_air = False #while on top of the platform the player is able to jump
+                    # moving with the platform in the x direction
+                    if platform.move_x != 0:
+                        self.rect.x += platform.move_direction
+
+
+
+
 
             # updating player coordinates
             self.rect.x += dx
@@ -388,8 +414,8 @@ world_data = [[1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
                [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1],
                [1, 0, 0, 0, 0, 7, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1],
                [1, 0, 0, 0, 0, 2, 0, 0, 0, 0, 0, 7, 0, 0, 0, 0, 0, 0, 8, 1],
-               [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2, 2, 0, 7, 0, 5, 0, 2, 2, 1],
-               [1, 0, 0, 0, 0, 0, 0, 0, 5, 0, 0, 0, 2, 2, 0, 0, 0, 0, 0, 1],
+               [1, 0, 4, 0, 0, 0, 0, 0, 0, 0, 2, 2, 0, 7, 0, 5, 0, 2, 2, 1],
+               [1, 0, 0, 0, 0, 3, 0, 0, 5, 0, 0, 0, 2, 2, 0, 0, 0, 0, 0, 1],
                [1, 7, 0, 0, 2, 2, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1],
                [1, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1],
                [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 7, 0, 0, 7, 0, 0, 0, 0, 1],
@@ -407,26 +433,26 @@ world_data = [[1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
                 1]]  # the first row is going to be the dirt in the 5x5 grid. Defining where all the elements in the game will sit on the grid
 # The bottom row will be for the grass images
 
-# level2_data = [[1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
-#                [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1],
-#                [1, 0, 8, 0, 0, 7, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1],
-#                [1, 0, 2, 2, 0, 2, 0, 0, 0, 0, 0, 7, 0, 0, 0, 2, 0, 0, 0, 1],
-#                [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2, 2, 0, 7, 0, 5, 0, 2, 2, 1],
-#                [1, 0, 0, 0, 0, 7, 0, 0, 5, 0, 0, 0, 2, 2, 0, 0, 0, 0, 0, 1],
-#                [1, 7, 0, 0, 2, 2, 2, 0, 0, 0, 0, 7, 0, 0, 0, 0, 0, 0, 0, 1],
-#                [1, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1],
-#                [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 4, 0, 0, 0, 0, 0, 0, 0, 1],
-#                [1, 0, 2, 0, 0, 7, 0, 7, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1],
-#                [1, 0, 0, 2, 0, 0, 4, 0, 0, 0, 0, 7, 0, 0, 0, 0, 0, 0, 0, 1],
-#                [1, 0, 0, 0, 0, 0, 0, 0, 0, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1],
-#                [1, 0, 0, 4, 0, 0, 2, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1],
-#                [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 7, 0, 7, 2, 2, 0, 0, 0, 0, 1],
-#                [1, 0, 0, 0, 4, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 3, 0, 1],
-#                [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2, 0, 2, 0, 2, 2, 2, 2, 2, 1],
-#                [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2, 2, 2, 1, 1, 1, 1, 1, 1],
-#                [1, 0, 0, 0, 0, 2, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
-#                [1, 0, 0, 0, 2, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
-#                [1, 2, 2, 2, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1]]
+world_data2 = [[1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
+               [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1],
+               [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1],
+               [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1],
+               [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1],
+               [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1],
+               [1, 0, 0, 0, 0, 0, 7, 0, 0, 0, 0, 0, 7, 0, 0, 0, 0, 0, 0, 1],
+               [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1],
+               [1, 0, 0, 0, 0, 0, 0, 7, 0, 0, 0, 0, 4, 0, 0, 0, 0, 0, 0, 1],
+               [1, 8, 0, 0, 0, 7, 4, 0, 0, 0, 7, 0, 0, 0, 0, 0, 0, 0, 0, 1],
+               [1, 2, 2, 0, 0, 0, 0, 0, 0, 0, 0, 7, 0, 0, 0, 0, 0, 0, 0, 1],
+               [1, 1, 1, 0, 5, 0, 0, 5, 0, 0, 5, 0, 0, 2, 2, 2, 0, 0, 0, 1],
+               [1, 1, 1, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 1, 1, 1, 0, 0, 0, 1],
+               [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 1],
+               [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2, 1],
+               [1, 0, 0, 0, 0, 0, 7, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 4, 0, 1],
+               [1, 0, 0, 7, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2, 0, 0, 0, 1],
+               [1, 0, 0, 0, 0, 2, 2, 0, 0, 0, 0, 2, 2, 0, 0, 0, 0, 0, 0, 1],
+               [1, 0, 0, 0, 2, 1, 1, 2, 0, 3, 0, 1, 1, 0, 0, 0, 3, 0, 0, 1],
+               [1, 2, 2, 2, 1, 1, 1, 1, 2, 2, 2, 1, 1, 2, 2, 2, 2, 2, 2, 1]]
 
 # instances created to be able to run it in the game
 player = Player(100, screen_height - 130)
@@ -445,7 +471,8 @@ coin_group.add(coinScore)
 # if path.exists(f'level{level}'):  # checkin to see if the level data files exits in the directory
 #     pickle_in = open(f'level{level}', 'rb')  # if it exists used the pickle module to load the data in
 #     world_data = pickle.load(pickle_in)
-world = World(world_data)
+world = World(world_data2)
+
 
 # creating buttons
 restart_button = Button(screen_width // 2 - 50, screen_height // 2 + 100, restart_image)
@@ -480,7 +507,7 @@ while GameIsRunning:
             if pygame.sprite.spritecollide(player, coin_group, True):
                 score += 1
                 coinSound.play()
-            draw_text('SCORE: ' + str(score), fontScore, black, tile_size - 10, 10)
+            draw_text(' SCORE: ' + str(score), fontScore, black, tile_size - 10, 5)
 
         enemy_group.draw(screen)
         platform_Group.draw(screen)
@@ -490,7 +517,7 @@ while GameIsRunning:
 
         game_over = player.update(game_over)
 
-        # if player has died calling the restart button
+        # if player has died the the restart button will appear on the screen
         if game_over == -1:
             if restart_button.draw():
                 player.reset(100, screen_height - 130)  # resetting the player back to the start of the game
@@ -498,15 +525,16 @@ while GameIsRunning:
                 # reseetin the score back to 0 when the player dies
                 score = 0
 
-        #
+
         if game_over == 1:
             # resettin the game and the proceed to the next level
-            level += 1  # increasing the level by one when the player completes a level
+              # increasing the level by one when the player completes a level
             if level <= maxLevel:
                 # reset all the levels and go back to level 1
                 world_data = []  # clearin the current level data that exists
                 world = reset_level(
                     level)  # passin the reset function that clears the level and creates the new level based on the level data files and returnin it
+                world2 = reset_level(level)
                 game_over = 0  # resetting everyhting
             else:
                 draw_text('YOU WON!!', font, green, (screen_width // 2) - 140, screen_height // 2)
