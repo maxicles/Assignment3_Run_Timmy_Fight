@@ -3,6 +3,7 @@ from pygame.locals import *
 import pickle
 from os import path
 from pygame import mixer
+import random
 
 # Initializing pygame
 pygame.init()
@@ -23,7 +24,6 @@ pygame.display.set_caption("Run Timmy, Fight Platformer")
 fontScore = pygame.font.SysFont('ComicSans', 70)
 font = pygame.font.SysFont('Bauhaus', 80)
 
-
 # font colors
 black = (0, 0, 0)
 green = (0, 255, 0)
@@ -34,14 +34,12 @@ game_over = 0
 # creating a variable to determine whether your in the main game or at the main menu so the start and exit buttons will appear
 main_menu = True
 level = 1
-maxLevel = 2
+maxLevel = 1
 score = 0
 lives = 3
 Lost = False
 
-
 # Loading some images into the game to store them
-sun_image = pygame.image.load('assets/sun.png')
 background_image = pygame.image.load('assets/Sky_dark.png')
 restart_image = pygame.image.load('assets/restart_Buttom.png')
 start_image = pygame.image.load('assets/start Button.png')
@@ -60,6 +58,8 @@ jumpSound = pygame.mixer.Sound('assets/jumpSound.wav')
 jumpSound.set_volume(0.5)
 gameoverSound = pygame.mixer.Sound('assets/gameoverSound.wav')
 gameoverSound.set_volume(0.5)
+
+
 # pygame.mixer.music.load('assets/Worldmap Theme.mp3')
 # pygame.mixer.music.play()
 
@@ -76,17 +76,42 @@ def draw_text(text, font, text_column, x, y):
 #
 def reset_level(level):  # creatin a function for the level to reset when the player has died
     player.reset(100, screen_height - 130)  # resetting the player back to the start of the game
-    enemy_group.empty()  # emptying the sprite Groups so that the ones that were there on the previous level disappear
+    enemy_group.empty()
+    platform_Group.empty()  # emptying the sprite Groups so that the ones that were there on the previous level disappear
     lava_group.empty()
     exit_group.empty()
     coin_group.empty()
+
+    world_data2 = [[1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
+                   [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1],
+                   [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1],
+                   [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1],
+                   [1, 0, 0, 0, 7, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1],
+                   [1, 0, 0, 0, 4, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1],
+                   [1, 0, 0, 0, 0, 0, 7, 0, 0, 0, 0, 0, 7, 0, 0, 0, 0, 0, 0, 1],
+                   [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1],
+                   [1, 0, 0, 0, 0, 0, 0, 7, 0, 0, 0, 0, 4, 0, 0, 0, 0, 0, 0, 1],
+                   [1, 8, 0, 0, 0, 7, 0, 0, 0, 0, 7, 0, 0, 0, 0, 0, 0, 0, 0, 1],
+                   [1, 2, 2, 0, 0, 0, 0, 0, 0, 0, 0, 7, 0, 0, 0, 0, 0, 0, 0, 1],
+                   [1, 1, 1, 0, 5, 0, 0, 5, 0, 0, 5, 0, 0, 2, 2, 2, 0, 0, 0, 1],
+                   [1, 1, 1, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 1, 1, 1, 0, 0, 0, 1],
+                   [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 1],
+                   [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2, 1],
+                   [1, 0, 0, 0, 0, 0, 7, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 4, 0, 1],
+                   [1, 0, 0, 7, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2, 0, 0, 0, 1],
+                   [1, 0, 0, 0, 0, 2, 2, 0, 0, 0, 0, 2, 2, 0, 0, 0, 0, 0, 0, 1],
+                   [1, 0, 0, 0, 2, 1, 1, 2, 0, 3, 0, 1, 1, 0, 0, 0, 3, 0, 0, 1],
+                   [1, 2, 2, 2, 1, 1, 1, 1, 2, 2, 2, 1, 1, 2, 2, 2, 2, 2, 2, 1]]
 
     # # if the player dies the the below fuction will reset the level data creating the world again.#
     # if path.exists(f'level{level}'):
     #     pickle_in = open(f'level{level}', 'r')
     #     world_data = pickle_in.load(pickle_in)
-    world = World(world_data)
-    return world  # loading all the levels again and returnin the ame world back into the game loop
+    world2 = World(world_data2)
+    score_coin = Coins(tile_size // 2, tile_size // 2)
+    coin_group.add(score_coin)
+
+    return world2  # loading all the levels again and returnin the ame world back into the game loop
 
 
 class Button():  # creatin the class for the load, restart and save buttons
@@ -104,12 +129,10 @@ class Button():  # creatin the class for the load, restart and save buttons
 
         # checking to see if the mouse button has been pressed
         if self.rect.collidepoint(position):
-            if pygame.mouse.get_pressed()[
-                0] == 1 and self.clicked == False:  # the index 0 is referred to the left mosue button
+            if pygame.mouse.get_pressed()[0] == 1 and self.clicked == False: #the index 0 is referred to the left mosue button
                 action = True
                 self.clicked = True
-        if pygame.mouse.get_pressed()[
-            0] == 0:  # if you've released the mouse button its not pressed and nothing with happen
+        if pygame.mouse.get_pressed()[0] == 0:  # if you've released the mouse button its not pressed and nothing with happen
             self.clicked = False
 
         # drawing the vutton images on the screen
@@ -123,11 +146,11 @@ class Player():
         self.reset(x,
                    y)  # calling the reset method, so when the player dies, The character will be respawned at the beginning
 
-    def update(self, game_over, lives):
+    def update(self, game_over):
         dx = 0
         dy = 0
         anim_cooldown = 5  # 20 iterations need to pass before the next index
-        collision_threshold = 20
+        collision_threshold = 10
 
         if game_over == 0:
             # adding in controls for the player
@@ -135,7 +158,7 @@ class Player():
             if key[
                 pygame.K_SPACE] and self.jump == False and self.in_air == False:  # the player will only be able to jump if he is on the round
                 jumpSound.play()
-                self.velocity_y = -18
+                self.velocity_y = -20
                 self.jump = True
             if key[pygame.K_SPACE] == False:
                 self.jump = False
@@ -214,29 +237,26 @@ class Player():
                 game_over = 1
 
             # collison with the platforms
-            #moving through each of the platforms individually and checkin if the player has collided with it
+            # moving through each of the platforms individually and checkin if the player has collided with it
             for platform in platform_Group:
-                if platform.rect.colliderect(self.rect.x + dx, self.rect.y, self.width, self.height):  #checkin for collision in the x direction
+                if platform.rect.colliderect(self.rect.x + dx, self.rect.y, self.width,
+                                             self.height):  # checkin for collision in the x direction
                     dx = 0
-                if platform.rect.colliderect(self.rect.x + dy, self.rect.y, self.width,
+                if platform.rect.colliderect(self.rect.x, self.rect.y + dy,  self.width,
                                              self.height):  # checkin for collision in the y direction
-                # checking if the player is below the platform
+                    # checking if the player is below the platform
                     if ((self.rect.top + dy) - platform.rect.bottom) < collision_threshold:
                         self.velocity_y = 0
                         dy = platform.rect.bottom - self.rect.top
 
-                    #checkin if player is above the platform
-                    elif abs((self.rect.bottom + dy) - platform.rect.top) <collision_threshold:
-                        self.rect.bottom = platform.rect.top - 1# lands the the player on top of the platform and making sure you're able to still move on the platform
+                    # checkin if player is above the platform
+                    elif abs((self.rect.bottom + dy) - platform.rect.top) < collision_threshold:
+                        self.rect.bottom = platform.rect.top - 1  # lands the the player on top of the platform and making sure you're able to still move on the platform
+                        self.in_air = False  # while on top of the platform the player is able to jump
                         dy = 0
-                        self.in_air = False #while on top of the platform the player is able to jump
                     # moving with the platform in the x direction
                     if platform.move_x != 0:
                         self.rect.x += platform.move_direction
-
-
-
-
 
             # updating player coordinates
             self.rect.x += dx
@@ -249,7 +269,7 @@ class Player():
                 self.rect.y -= 5
 
         screen.blit(self.image, self.rect)  # drawing the player on the screen
-        pygame.draw.rect(screen, (255, 255, 255), self.rect, 2)
+        # pygame.draw.rect(screen, (255, 255, 255), self.rect, 2)
 
         return game_over
 
@@ -262,7 +282,7 @@ class Player():
         for num in range(1, 9):
             player_image_right = pygame.image.load(f'assets/player{num}.png')
             player_image_right = pygame.transform.scale(player_image_right,
-                                                        (35, 70))  # loading in the player image and scaling in to size
+                                                        (35, 60))  # loading in the player image and scaling in to size
             player_image_left = pygame.transform.flip(player_image_right, True,
                                                       False)  # using the right image thats loaded and flipping it to the left
             self.anim_right.append(player_image_right)
@@ -305,7 +325,7 @@ class World():
                 if tile == 2:  # creating the grass
                     image = pygame.transform.scale(grass_image, (tile_size, tile_size))
                     image_rect = image.get_rect()
-                    # ivin the image an x and y coordinate
+                    # givin the image an x and y coordinate
                     image_rect.x = column_count * tile_size
                     image_rect.y = row_count * tile_size
                     tile = (image, image_rect)
@@ -369,13 +389,12 @@ class Platform(pygame.sprite.Sprite):
         self.rect.y = y
         self.move_counter = 0
         self.move_direction = 1
-        self.move_x = move_x
-        self.move_y = move_y
-
+        self.moveX = move_x
+        self.moveY = move_y
 
     def update(self):
-        self.rect.x += self.move_direction * self.move_x
-        self.rect.y += self.move_direction * self.move_y
+        self.rect.x += self.move_direction * self.moveX
+        self.rect.y += self.move_direction * self.moveY
         self.move_counter += 1
         if abs(self.move_counter) > 50:
             self.move_direction *= -1
@@ -390,7 +409,6 @@ class Lava(pygame.sprite.Sprite):
         self.rect = self.image.get_rect()
         self.rect.x = x
         self.rect.y = y
-
 
 
 class Coins(pygame.sprite.Sprite):
@@ -417,56 +435,37 @@ class ExitDoor(pygame.sprite.Sprite):
 
 # the world data is just a list of numbers tha represent the grass, dirt and moving platforms
 world_data = [[1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
-               # this is the same data that is created and stored in the level_data files. This one is level 2
-               [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1],
-               [1, 0, 0, 0, 0, 7, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1],
-               [1, 0, 0, 0, 0, 2, 0, 0, 0, 0, 0, 7, 0, 0, 0, 0, 0, 0, 8, 1],
-               [1, 0, 4, 0, 0, 0, 0, 0, 0, 0, 2, 2, 0, 7, 0, 5, 0, 2, 2, 1],
-               [1, 0, 0, 0, 0, 3, 0, 0, 5, 0, 0, 0, 2, 2, 0, 0, 0, 0, 0, 1],
-               [1, 7, 0, 0, 2, 2, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1],
-               [1, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1],
-               [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 7, 0, 0, 7, 0, 0, 0, 0, 1],
-               [1, 0, 2, 0, 0, 7, 0, 7, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1],
-               [1, 0, 0, 2, 0, 0, 4, 0, 0, 0, 3, 0, 0, 0, 3, 0, 0, 0, 0, 1],
-               [1, 0, 0, 0, 0, 0, 0, 0, 0, 2, 2, 2, 2, 2, 2, 2, 0, 0, 0, 1],
-               [1, 0, 0, 0, 0, 0, 0, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1],
-               [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 7, 0, 7, 0, 0, 0, 0, 2, 0, 1],
-               [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1],
-               [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2, 0, 2, 0, 2, 2, 2, 2, 2, 1],
-               [1, 0, 0, 0, 0, 0, 2, 2, 2, 6, 6, 6, 6, 6, 1, 1, 1, 1, 1, 1],
-               [1, 0, 0, 0, 0, 2, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
-               [1, 0, 0, 0, 2, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
-               [1, 2, 2, 2, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
-                1]]  # the first row is going to be the dirt in the 20x20 grid. Defining where all the elements in the game will sit on the grid
+              # this is the same data that is created and stored in the level_data files. This one is level 2
+              [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1],
+              [1, 0, 0, 0, 0, 7, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1],
+              [1, 0, 0, 0, 0, 2, 0, 0, 0, 0, 0, 7, 0, 7, 0, 0, 0, 0, 7, 1],
+              [1, 0, 4, 0, 0, 0, 0, 0, 0, 0, 2, 2, 2, 2, 0, 5, 0, 2, 2, 1],
+              [1, 0, 0, 0, 0, 3, 0, 0, 5, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1],
+              [1, 7, 0, 0, 2, 2, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1],
+              [1, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 8, 1],
+              [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 7, 2, 2, 7, 0, 0, 0, 2, 1],
+              [1, 0, 2, 0, 0, 7, 0, 7, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1],
+              [1, 0, 0, 2, 0, 0, 4, 0, 0, 0, 3, 0, 0, 0, 3, 0, 0, 0, 0, 1],
+              [1, 0, 0, 0, 0, 0, 0, 0, 0, 2, 2, 2, 2, 2, 2, 2, 0, 0, 0, 1],
+              [1, 0, 0, 0, 0, 0, 0, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1],
+              [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 7, 0, 7, 0, 0, 0, 0, 2, 0, 1],
+              [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1],
+              [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2, 0, 2, 0, 2, 2, 2, 2, 2, 1],
+              [1, 0, 0, 0, 0, 0, 2, 2, 2, 6, 6, 6, 6, 6, 1, 1, 1, 1, 1, 1],
+              [1, 0, 0, 0, 0, 2, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
+              [1, 0, 0, 0, 2, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
+              [1, 2, 2, 2, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+               1]]  # the first row is going to be the dirt in the 20x20 grid. Defining where all the elements in the game will sit on the grid
 # # The bottom row will be for the grass images
 #
-# world_data2 = [[1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
-#                [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1],
-#                [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1],
-#                [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1],
-#                [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1],
-#                [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1],
-#                [1, 0, 0, 0, 0, 0, 7, 0, 0, 0, 0, 0, 7, 0, 0, 0, 0, 0, 0, 1],
-#                [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1],
-#                [1, 0, 0, 0, 0, 0, 0, 7, 0, 0, 0, 0, 4, 0, 0, 0, 0, 0, 0, 1],
-#                [1, 8, 0, 0, 0, 7, 4, 0, 0, 0, 7, 0, 0, 0, 0, 0, 0, 0, 0, 1],
-#                [1, 2, 2, 0, 0, 0, 0, 0, 0, 0, 0, 7, 0, 0, 0, 0, 0, 0, 0, 1],
-#                [1, 1, 1, 0, 5, 0, 0, 5, 0, 0, 5, 0, 0, 2, 2, 2, 0, 0, 0, 1],
-#                [1, 1, 1, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 1, 1, 1, 0, 0, 0, 1],
-#                [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 1],
-#                [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2, 1],
-#                [1, 0, 0, 0, 0, 0, 7, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 4, 0, 1],
-#                [1, 0, 0, 7, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2, 0, 0, 0, 1],
-#                [1, 0, 0, 0, 0, 2, 2, 0, 0, 0, 0, 2, 2, 0, 0, 0, 0, 0, 0, 1],
-#                [1, 0, 0, 0, 2, 1, 1, 2, 0, 3, 0, 1, 1, 0, 0, 0, 3, 0, 0, 1],
-#                [1, 2, 2, 2, 1, 1, 1, 1, 2, 2, 2, 1, 1, 2, 2, 2, 2, 2, 2, 1]]
+
 
 # instances created to be able to run it in the game
 player = Player(100, screen_height - 130)
 
 enemy_group = pygame.sprite.Group()
-lava_group = pygame.sprite.Group()
 platform_Group = pygame.sprite.Group()
+lava_group = pygame.sprite.Group()
 coin_group = pygame.sprite.Group()
 exit_group = pygame.sprite.Group()
 
@@ -479,8 +478,6 @@ coin_group.add(coinScore)
 #     pickle_in = open(f'level{level}', 'r')  # if it exists used the pickle module to load the data in
 #     world_data = pickle.load(pickle_in)
 world = World(world_data)
-
-
 
 # creating buttons
 restart_button = Button(screen_width // 2 - 50, screen_height // 2 + 100, restart_image)
@@ -496,7 +493,6 @@ while GameIsRunning:
 
     # drawing the background image onto the screen
     screen.blit(background_image, (0, 0))
-    screen.blit(sun_image, (100, 100))
 
     if main_menu == True:
         # drawing the buttons on the screen
@@ -517,14 +513,13 @@ while GameIsRunning:
                 coinSound.play()
             draw_text(' SCORE: ' + str(score), fontScore, black, tile_size - 10, 5)
 
-
         enemy_group.draw(screen)
         platform_Group.draw(screen)
         lava_group.draw(screen)
         coin_group.draw(screen)
         exit_group.draw(screen)
 
-        game_over = player.update(game_over, lives)
+        game_over = player.update(game_over)
 
         # if player has died the the restart button will appear on the screen
         if game_over == -1:
@@ -534,21 +529,21 @@ while GameIsRunning:
                 # reseetin the score back to 0 when the player dies
                 score = 0
 
-
         if game_over == 1:
             # resettin the game and the proceed to the next level
-              # increasing the level by one when the player completes a level
+            # increasing the level by one when the player completes a level
             if level <= maxLevel:
                 # reset all the levels and go back to level 1
                 world_data = []  # clearin the current level data that exists
                 world = reset_level(
                     level)  # passin the reset function that clears the level and creates the new level based on the level data files and returnin it
-                world2 = reset_level(level)
-                game_over = 0  # resetting everyhting
+
+
             else:
                 draw_text('YOU WON!!', font, green, (screen_width // 2) - 140, screen_height // 2)
             if restart_button.draw():
                 level = 1
+
                 # reset from level 1
                 world_data = []
                 world = reset_level(level)
