@@ -20,8 +20,9 @@ screen = pygame.display.set_mode((screen_width, screen_height))
 pygame.display.set_caption("Run Timmy, Fight Platformer")
 
 # defining the text fonts
-fontScore = pygame.font.SysFont('Bauhaus', 70)
+fontScore = pygame.font.SysFont('ComicSans', 70)
 font = pygame.font.SysFont('Bauhaus', 80)
+
 
 # font colors
 black = (0, 0, 0)
@@ -35,6 +36,9 @@ main_menu = True
 level = 1
 maxLevel = 2
 score = 0
+lives = 3
+Lost = False
+
 
 # Loading some images into the game to store them
 sun_image = pygame.image.load('assets/sun.png')
@@ -65,6 +69,9 @@ def draw_text(text, font, text_column, x, y):
     text_image = font.render(text, True, text_column)
     screen.blit(text_image, (x, y))
 
+    # lives_font = font.render(f"LIVES: {lives}", 1, black)  # using the f string to embedd variables inside the brackets
+    # screen.blit(lives_font, (600, 5))  # top level hand corner of the screen
+
 
 #
 def reset_level(level):  # creatin a function for the level to reset when the player has died
@@ -76,7 +83,7 @@ def reset_level(level):  # creatin a function for the level to reset when the pl
 
     # # if the player dies the the below fuction will reset the level data creating the world again.#
     # if path.exists(f'level{level}'):
-    #     pickle_in = open(f'level{level}', 'rb')
+    #     pickle_in = open(f'level{level}', 'r')
     #     world_data = pickle_in.load(pickle_in)
     world = World(world_data)
     return world  # loading all the levels again and returnin the ame world back into the game loop
@@ -116,7 +123,7 @@ class Player():
         self.reset(x,
                    y)  # calling the reset method, so when the player dies, The character will be respawned at the beginning
 
-    def update(self, game_over):
+    def update(self, game_over, lives):
         dx = 0
         dy = 0
         anim_cooldown = 5  # 20 iterations need to pass before the next index
@@ -218,7 +225,7 @@ class Player():
                         self.velocity_y = 0
                         dy = platform.rect.bottom - self.rect.top
 
-                    #checkin if player is aboce the platform
+                    #checkin if player is above the platform
                     elif abs((self.rect.bottom + dy) - platform.rect.top) <collision_threshold:
                         self.rect.bottom = platform.rect.top - 1# lands the the player on top of the platform and making sure you're able to still move on the platform
                         dy = 0
@@ -408,7 +415,7 @@ class ExitDoor(pygame.sprite.Sprite):
         self.rect.y = y
 
 
-# # the world data is just a list of numbers tha represent the grass, dirt and moving platforms
+# the world data is just a list of numbers tha represent the grass, dirt and moving platforms
 world_data = [[1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
                # this is the same data that is created and stored in the level_data files. This one is level 2
                [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1],
@@ -430,29 +437,29 @@ world_data = [[1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
                [1, 0, 0, 0, 0, 2, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
                [1, 0, 0, 0, 2, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
                [1, 2, 2, 2, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
-                1]]  # the first row is going to be the dirt in the 5x5 grid. Defining where all the elements in the game will sit on the grid
-# The bottom row will be for the grass images
-
-world_data2 = [[1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
-               [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1],
-               [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1],
-               [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1],
-               [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1],
-               [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1],
-               [1, 0, 0, 0, 0, 0, 7, 0, 0, 0, 0, 0, 7, 0, 0, 0, 0, 0, 0, 1],
-               [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1],
-               [1, 0, 0, 0, 0, 0, 0, 7, 0, 0, 0, 0, 4, 0, 0, 0, 0, 0, 0, 1],
-               [1, 8, 0, 0, 0, 7, 4, 0, 0, 0, 7, 0, 0, 0, 0, 0, 0, 0, 0, 1],
-               [1, 2, 2, 0, 0, 0, 0, 0, 0, 0, 0, 7, 0, 0, 0, 0, 0, 0, 0, 1],
-               [1, 1, 1, 0, 5, 0, 0, 5, 0, 0, 5, 0, 0, 2, 2, 2, 0, 0, 0, 1],
-               [1, 1, 1, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 1, 1, 1, 0, 0, 0, 1],
-               [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 1],
-               [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2, 1],
-               [1, 0, 0, 0, 0, 0, 7, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 4, 0, 1],
-               [1, 0, 0, 7, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2, 0, 0, 0, 1],
-               [1, 0, 0, 0, 0, 2, 2, 0, 0, 0, 0, 2, 2, 0, 0, 0, 0, 0, 0, 1],
-               [1, 0, 0, 0, 2, 1, 1, 2, 0, 3, 0, 1, 1, 0, 0, 0, 3, 0, 0, 1],
-               [1, 2, 2, 2, 1, 1, 1, 1, 2, 2, 2, 1, 1, 2, 2, 2, 2, 2, 2, 1]]
+                1]]  # the first row is going to be the dirt in the 20x20 grid. Defining where all the elements in the game will sit on the grid
+# # The bottom row will be for the grass images
+#
+# world_data2 = [[1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
+#                [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1],
+#                [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1],
+#                [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1],
+#                [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1],
+#                [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1],
+#                [1, 0, 0, 0, 0, 0, 7, 0, 0, 0, 0, 0, 7, 0, 0, 0, 0, 0, 0, 1],
+#                [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1],
+#                [1, 0, 0, 0, 0, 0, 0, 7, 0, 0, 0, 0, 4, 0, 0, 0, 0, 0, 0, 1],
+#                [1, 8, 0, 0, 0, 7, 4, 0, 0, 0, 7, 0, 0, 0, 0, 0, 0, 0, 0, 1],
+#                [1, 2, 2, 0, 0, 0, 0, 0, 0, 0, 0, 7, 0, 0, 0, 0, 0, 0, 0, 1],
+#                [1, 1, 1, 0, 5, 0, 0, 5, 0, 0, 5, 0, 0, 2, 2, 2, 0, 0, 0, 1],
+#                [1, 1, 1, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 1, 1, 1, 0, 0, 0, 1],
+#                [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 1],
+#                [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2, 1],
+#                [1, 0, 0, 0, 0, 0, 7, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 4, 0, 1],
+#                [1, 0, 0, 7, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2, 0, 0, 0, 1],
+#                [1, 0, 0, 0, 0, 2, 2, 0, 0, 0, 0, 2, 2, 0, 0, 0, 0, 0, 0, 1],
+#                [1, 0, 0, 0, 2, 1, 1, 2, 0, 3, 0, 1, 1, 0, 0, 0, 3, 0, 0, 1],
+#                [1, 2, 2, 2, 1, 1, 1, 1, 2, 2, 2, 1, 1, 2, 2, 2, 2, 2, 2, 1]]
 
 # instances created to be able to run it in the game
 player = Player(100, screen_height - 130)
@@ -469,9 +476,10 @@ coin_group.add(coinScore)
 
 # loadin in the level data to create the world
 # if path.exists(f'level{level}'):  # checkin to see if the level data files exits in the directory
-#     pickle_in = open(f'level{level}', 'rb')  # if it exists used the pickle module to load the data in
+#     pickle_in = open(f'level{level}', 'r')  # if it exists used the pickle module to load the data in
 #     world_data = pickle.load(pickle_in)
-world = World(world_data2)
+world = World(world_data)
+
 
 
 # creating buttons
@@ -509,13 +517,14 @@ while GameIsRunning:
                 coinSound.play()
             draw_text(' SCORE: ' + str(score), fontScore, black, tile_size - 10, 5)
 
+
         enemy_group.draw(screen)
         platform_Group.draw(screen)
         lava_group.draw(screen)
         coin_group.draw(screen)
         exit_group.draw(screen)
 
-        game_over = player.update(game_over)
+        game_over = player.update(game_over, lives)
 
         # if player has died the the restart button will appear on the screen
         if game_over == -1:
