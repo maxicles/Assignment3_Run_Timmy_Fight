@@ -56,8 +56,8 @@ jumpSound = pygame.mixer.Sound('assets/jumpSound.wav')
 jumpSound.set_volume(0.5)
 gameoverSound = pygame.mixer.Sound('assets/gameoverSound.wav')
 gameoverSound.set_volume(0.5)
-pygame.mixer.music.load('assets/Worldmap Theme.mp3')
-pygame.mixer.music.play()
+# pygame.mixer.music.load('assets/Worldmap Theme.mp3')
+# pygame.mixer.music.play()
 
 
 # drawing the text of the score and how many coins collected
@@ -72,6 +72,7 @@ def reset_level(level):  # creatin a function for the level to reset when the pl
     enemy_group.empty()  # emptying the sprite Groups so that the ones that were there on the previous level disappear
     lava_group.empty()
     exit_group.empty()
+    coin_group.empty()
 
     # # if the player dies the the below fuction will reset the level data creating the world again.#
     # if path.exists(f'level{level}'):
@@ -282,6 +283,9 @@ class World():
                 if tile == 4:
                     platform = Platform(column_count * tile_size, row_count * tile_size, 0, 1)
                     platform_Group.add(platform)
+                if tile == 5:
+                    platform = Platform(column_count * tile_size, row_count * tile_size, 1, 0)
+                    platform_Group.add(platform)
                 if tile == 6:  # in the level data each number 6 will represent where the lava is placed
                     lava = Lava(column_count * tile_size, row_count * tile_size + (
                             tile_size // 2))  # the lava image is half the size of the tile. Scalin it up by 2 to fit
@@ -322,16 +326,6 @@ class Enemy(pygame.sprite.Sprite):
             self.move_counter *= -1
 
 
-class Lava(pygame.sprite.Sprite):
-    def __init__(self, x, y):
-        pygame.sprite.Sprite.__init__(self)  # the enemy class is a child of the sprite class
-        lava_image = pygame.image.load('assets/lava.png')
-        self.image = pygame.transform.scale(lava_image, (tile_size, tile_size // 2))
-        self.rect = self.image.get_rect()
-        self.rect.x = x
-        self.rect.y = y
-
-
 class Platform(pygame.sprite.Sprite):
     def __init__(self, x, y, move_x, move_y):
         pygame.sprite.Sprite.__init__(self)
@@ -345,6 +339,7 @@ class Platform(pygame.sprite.Sprite):
         self.move_x = move_x
         self.move_y = move_y
 
+
     def update(self):
         self.rect.x += self.move_direction * self.move_x
         self.rect.y += self.move_direction * self.move_y
@@ -352,6 +347,17 @@ class Platform(pygame.sprite.Sprite):
         if abs(self.move_counter) > 50:
             self.move_direction *= -1
             self.move_counter *= -1
+
+
+class Lava(pygame.sprite.Sprite):
+    def __init__(self, x, y):
+        pygame.sprite.Sprite.__init__(self)  # the enemy class is a child of the sprite class
+        lava_image = pygame.image.load('assets/lava.png')
+        self.image = pygame.transform.scale(lava_image, (tile_size, tile_size // 2))
+        self.rect = self.image.get_rect()
+        self.rect.x = x
+        self.rect.y = y
+
 
 
 class Coins(pygame.sprite.Sprite):
@@ -380,17 +386,17 @@ class ExitDoor(pygame.sprite.Sprite):
 world_data = [[1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
                # this is the same data that is created and stored in the level_data files. This one is level 2
                [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1],
-               [1, 0, 0, 0, 0, 7, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 8, 1],
-               [1, 0, 0, 0, 0, 2, 0, 0, 0, 0, 0, 7, 0, 0, 0, 2, 0, 0, 0, 1],
+               [1, 0, 0, 0, 0, 7, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1],
+               [1, 0, 0, 0, 0, 2, 0, 0, 0, 0, 0, 7, 0, 0, 0, 0, 0, 0, 8, 1],
                [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2, 2, 0, 7, 0, 5, 0, 2, 2, 1],
                [1, 0, 0, 0, 0, 0, 0, 0, 5, 0, 0, 0, 2, 2, 0, 0, 0, 0, 0, 1],
                [1, 7, 0, 0, 2, 2, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1],
                [1, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1],
                [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 7, 0, 0, 7, 0, 0, 0, 0, 1],
                [1, 0, 2, 0, 0, 7, 0, 7, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1],
-               [1, 0, 0, 2, 0, 0, 4, 0, 0, 0, 0, 3, 0, 0, 3, 0, 0, 0, 0, 1],
+               [1, 0, 0, 2, 0, 0, 4, 0, 0, 0, 3, 0, 0, 0, 3, 0, 0, 0, 0, 1],
                [1, 0, 0, 0, 0, 0, 0, 0, 0, 2, 2, 2, 2, 2, 2, 2, 0, 0, 0, 1],
-               [1, 0, 0, 0, 0, 0, 2, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1],
+               [1, 0, 0, 0, 0, 0, 0, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1],
                [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 7, 0, 7, 0, 0, 0, 0, 2, 0, 1],
                [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1],
                [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2, 0, 2, 0, 2, 2, 2, 2, 2, 1],
@@ -424,6 +430,7 @@ world_data = [[1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
 
 # instances created to be able to run it in the game
 player = Player(100, screen_height - 130)
+
 enemy_group = pygame.sprite.Group()
 lava_group = pygame.sprite.Group()
 platform_Group = pygame.sprite.Group()
@@ -468,6 +475,7 @@ while GameIsRunning:
 
         if game_over == 0:  # if the player dies, reset the enemies
             enemy_group.update()
+            platform_Group.update()
             # updatin the score and checkin if a coin has been collected
             if pygame.sprite.spritecollide(player, coin_group, True):
                 score += 1
